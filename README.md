@@ -155,7 +155,7 @@ can change this. It will then verify that "m.db" and "p.db" exist there. It keep
 invalid values, so you can't possibly mess this part up.
 
 Next you're prompted for the source drive letter. This is from WHERE YOU ARE COPYING FROM. If your external drive was say
-F:, you'd enter any of the following: f, f:, f:\
+F:, you'd enter any of the following: f, f:, f:\\
 The app will then verify that this is valid and that AT THE ROOT LEVEL it can find Engine Library\m.db and p.db.
 This was designed to import from external drives, so it most likely won't help you to import from any other source like
 say a network share or different directory on your computer.
