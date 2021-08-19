@@ -150,7 +150,7 @@ and screwing up your db. In theory. I'd still make backups.
 VERY IMPORTANT: This expects that there already exists the files "m.db" and "p.db" in your Engine Library folder.
 If you are missing them, simply run the Engine Prime software once and exit: it will create placeholder files for you.
 
-The app will attempt to auto locate your PC's Engine Library. If it fails or if it guessed wrong, you will
+The app will attempt to auto locate your PC's Engine Library. If it fails or if it guessed wrong, you 
 can change this. It will then verify that "m.db" and "p.db" exist there. It keeps prompting you if you keep entering
 invalid values, so you can't possibly mess this part up.
 
