@@ -76,7 +76,7 @@ The program will check to see if those files exist. If they don't, you'll be pla
 for the proper folder until it's able to find the database files it needs. You can't screw this part up.
 
 Next it asks you for the destination drive LETTER of the external drive. If you external drive is F:, you can enter any of the following:
-F, F:, F:\
+F, F:, F:\\
 I suppose this doesn't actually have to be removable media like a thumb drive. It could be any drive. If it's a network drive you'll
 have to map it though first so that you can assign it a drive letter.
 
