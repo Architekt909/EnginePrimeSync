@@ -70,12 +70,109 @@ namespace EnginePrimeSync.Exporters
 				ImportExternalDb();
 		}
 
-		private void ExportLocalDb()
+		private void ImportExternalDb()
+		{
+			var musicPath = GetLocalMusicLibraryPath();
+			var sourceDrive = GetDriveLetter(false);
+
+			// Verify m.db and p.db exist on the destination drive
+			var sourceFolder = sourceDrive + @"Engine Library\";
+
+			while (!File.Exists(sourceFolder + MainDb.DB_NAME) || !File.Exists(sourceFolder + PerformanceDb.DB_NAME))
+			{
+				Console.WriteLine($"Enter the folder on drive {sourceDrive} that contains the files {MainDb.DB_NAME} and {PerformanceDb.DB_NAME}");
+				Console.WriteLine($"For example: {sourceDrive}Engine Library\nTrailing slash is optional");
+
+				var str = Console.ReadLine();
+				if (str == null)
+					continue;
+
+				str = str.Trim();
+				if ((str[^1] != '/') || (str[^1] != '\\'))
+					str += '/';
+
+				sourceFolder = str;
+			}
+
+			Console.ForegroundColor = ConsoleColor.Red;
+			Console.WriteLine($"We will now copy the databases from {sourceFolder} to {musicPath}");
+			Console.WriteLine("Press enter to continue.");
+			Console.ForegroundColor = ConsoleColor.White;
+			Console.ReadLine();
+
+			var sourceMainDb = sourceFolder + MainDb.DB_NAME;
+			var sourcePerfDb = sourceFolder + PerformanceDb.DB_NAME;
+			var destMainDb = musicPath + MainDb.DB_NAME;
+			var destPerfDb = musicPath + PerformanceDb.DB_NAME;
+
+			try
+			{
+				File.Copy(sourceMainDb, destMainDb, true);
+				File.Copy(sourcePerfDb, destPerfDb, true);
+			}
+			catch (Exception e)
+			{
+				Console.ForegroundColor = ConsoleColor.Red;
+				Console.WriteLine("There was an error copying either or both of the databases. Aborting.\nI'd advise restoring your destination databases just to be safe.\nPress Enter to return to main menu.");
+				Console.ReadLine();
+				return;
+			}
+
+			// Now we need to remap paths in the destination main db
+			using var mainDb = new MainDb(musicPath);
+			var trackManager = new TrackManager();
+
+			try
+			{
+				mainDb.OpenDb();
+				if (!mainDb.ReadTrackInfo(trackManager))
+					throw new Exception();
+			}
+			catch (Exception e)
+			{
+				mainDb.CloseDb();
+				Console.ForegroundColor = ConsoleColor.Red;
+				Console.WriteLine("There was an error trying to read the destination databases. Aborting.\nI'd advise restoring your destination databases.\nPress enter to return to main menu.");
+				Console.ReadLine();
+				return;
+			}
+
+			var oldPrefixToNewPrefixMap = trackManager.RemapPrefixesForImporting(musicPath);
+
+			Console.ForegroundColor = ConsoleColor.Magenta;
+			Console.WriteLine($"Updating paths for {oldPrefixToNewPrefixMap.Count} tracks. This may take a while.");
+			Console.ForegroundColor = ConsoleColor.White;
+
+			int count = 1;
+			foreach (var kvp in oldPrefixToNewPrefixMap)
+			{
+				Console.WriteLine($"Updating track {count}/{oldPrefixToNewPrefixMap.Count}");
+				++count;
+				
+				if (!mainDb.RemapTrackTablePathColumnForSingleId(kvp.Key, EnginePrimeDb.EXTERNAL_MUSIC_FOLDER, kvp.Value))
+				{
+					Console.ForegroundColor = ConsoleColor.Red;
+					Console.WriteLine($"There was an error remapping paths for database:\n{mainDb.GetDbPath()}\nOld prefix: {kvp.Key}\nNew prefix: {kvp.Value}\nPress enter to return to main menu.");
+					Console.ForegroundColor = ConsoleColor.White;
+					mainDb.CloseDb();
+					Console.ReadLine();
+					return;
+				}
+			}
+
+			mainDb.CloseDb();
+
+			Console.ForegroundColor = ConsoleColor.Green;
+			Console.WriteLine("Database import and path remapping complete. Press enter to return to main menu.");
+			Console.ReadLine();
+		}
+
+		private string GetLocalMusicLibraryPath()
 		{
 			var musicPath = Environment.GetFolderPath(Environment.SpecialFolder.MyMusic) + @"\Engine Library\";
 			bool useDefault = true;
 
-			if (File.Exists(musicPath + "m.db") && File.Exists(musicPath + "p.db"))
+			if (File.Exists(musicPath + MainDb.DB_NAME) && File.Exists(musicPath + PerformanceDb.DB_NAME))
 			{
 				Console.WriteLine($"Found local databases at: {musicPath}");
 				Console.WriteLine("Would you like to use this default?");
@@ -101,14 +198,14 @@ namespace EnginePrimeSync.Exporters
 						invalid = false;
 					}
 				}
-				
+
 			}
 			else
 				useDefault = false;
 
 			while (!useDefault)
 			{
-				Console.WriteLine("Enter full path to the FOLDER containing m.db and p.db:");
+				Console.WriteLine($"Enter full path to the LOCAL PC FOLDER containing {MainDb.DB_NAME} and {PerformanceDb.DB_NAME}:");
 				musicPath = Console.ReadLine();
 				if (musicPath == null)
 					continue;
@@ -116,20 +213,27 @@ namespace EnginePrimeSync.Exporters
 				if (musicPath[^1] != '\\')
 					musicPath += '\\';
 
-				if (!File.Exists(musicPath + "m.db") || !File.Exists(musicPath + "p.db"))
+				if (!File.Exists(musicPath + MainDb.DB_NAME) || !File.Exists(musicPath + PerformanceDb.DB_NAME))
 				{
 					Console.ForegroundColor = ConsoleColor.Red;
-					Console.WriteLine($"Can't find m.db and/or p.db at: {musicPath}");
+					Console.WriteLine($"Can't find {MainDb.DB_NAME} and/or {PerformanceDb.DB_NAME} at: {musicPath}");
 					Console.ForegroundColor = ConsoleColor.White;
 				}
 				else
 					useDefault = true;
 			}
 
+			return musicPath;
+		}
+
+		private string GetDriveLetter(bool driveIsDestinationDbLocation)
+		{
 			string destDrive = null;
 			while (destDrive == null)
 			{
-				Console.WriteLine("Enter DESTINATION DRIVE LETTER! Just drive letter, i.e. F or F: or F:\\!");
+				Console.Write(driveIsDestinationDbLocation ? "Enter DESTINATION DRIVE LETTER! " : "Enter SOURCE DRIVE LETTER! ");
+				Console.WriteLine("Just drive letter, i.e. F or F: or F:\\!");
+
 				destDrive = Console.ReadLine();
 				if (destDrive == null)
 					continue;
@@ -149,11 +253,21 @@ namespace EnginePrimeSync.Exporters
 				}
 			}
 
+			return destDrive;
+		}
+
+		private void ExportLocalDb()
+		{
+			var musicPath = GetLocalMusicLibraryPath();
+			string destDrive = GetDriveLetter(true);
+			
 			if (!ParseDatabases(musicPath))
 			{
 				Console.ForegroundColor = ConsoleColor.Red;
 				Console.WriteLine("There was an error trying to parse your database(s). Aborting.");
 				Console.ForegroundColor = ConsoleColor.White;
+				Console.WriteLine("Press enter to return to main menu.");
+				Console.ReadLine();
 				return;
 			}
 
@@ -176,6 +290,8 @@ namespace EnginePrimeSync.Exporters
 					Console.WriteLine("There was an error trying to recursively delete the old folder:");
 					Console.WriteLine(destLibraryPath + EnginePrimeDb.EXTERNAL_MUSIC_FOLDER);
 					Console.ForegroundColor = ConsoleColor.White;
+					Console.WriteLine("Press enter to return to main menu.");
+					Console.ReadLine();
 					return;
 				}
 			}
@@ -198,6 +314,9 @@ namespace EnginePrimeSync.Exporters
 					//
 				}
 
+				Console.WriteLine("Press enter to return to main menu.");
+				Console.ReadLine();
+
 				return;
 			}
 
@@ -205,14 +324,16 @@ namespace EnginePrimeSync.Exporters
 			Console.WriteLine("File copying completed successfully!. Copying databases over.");
 			try
 			{
-				File.Copy(_mainDb.GetDbPath(), destLibraryPath + "m.db", true);
-				File.Copy(_perfDb.GetDbPath(), destLibraryPath + "p.db", true);
+				File.Copy(_mainDb.GetDbPath(), destLibraryPath + MainDb.DB_NAME, true);
+				File.Copy(_perfDb.GetDbPath(), destLibraryPath + PerformanceDb.DB_NAME, true);
 			}
 			catch (Exception e)
 			{
 				Console.ForegroundColor = ConsoleColor.Red;
-				Console.WriteLine($"Error copying one or both databases.\nSource: {_mainDb.GetDbPath()} to {destLibraryPath}m.db\nSource: {_perfDb.GetDbPath()} to {destLibraryPath}p.db");
+				Console.WriteLine($"Error copying one or both databases.\nSource: {_mainDb.GetDbPath()} to {destLibraryPath}{MainDb.DB_NAME}\nSource: {_perfDb.GetDbPath()} to {destLibraryPath}{PerformanceDb.DB_NAME}");
 				Console.ForegroundColor = ConsoleColor.White;
+				Console.WriteLine("Press enter to return to main menu.");
+				Console.ReadLine();
 				return;
 			}
 
@@ -265,9 +386,6 @@ namespace EnginePrimeSync.Exporters
 			return oldPrefixes;
 		}
 
-		private void ImportExternalDb()
-		{
-
-		}
+		
 	}
 }

@@ -21,6 +21,50 @@ namespace EnginePrimeSync.DB
 		public int NumTracks() => _idToTrackMap.Count;
 		public void Clear() => _idToTrackMap.Clear();
 
+
+
+		// Doesn't copy any files. Returns map of track ID to new path string that should be set. Should include trailing slash
+		public Dictionary<int, string> RemapPrefixesForImporting(string destLibraryFolder)
+		{
+			var trackIdToNewPathMap = new Dictionary<int, string>();
+
+			bool requireRemap = true;
+			string oldPrefix = EnginePrimeDb.EXTERNAL_MUSIC_FOLDER;
+			string newPrefix = null;
+
+			foreach (var kvp in _idToTrackMap)
+			{
+				var track = kvp.Value;
+				bool done = false;
+
+				while (!done)
+				{
+					if (requireRemap)
+						newPrefix = RemapPrefixes(track, false, ref oldPrefix);
+					
+					// Verify this file exists locally
+					var newFullFilePath = destLibraryFolder + newPrefix + track.Path.Substring(oldPrefix.Length);
+					if (!File.Exists(newFullFilePath))
+					{
+						Console.ForegroundColor = ConsoleColor.Red;
+						Console.WriteLine($"Couldn't find file at destination: {newFullFilePath}");
+						Console.WriteLine("You will be prompted to try again to fix any prefix problems. Nothing has been modified at this point.");
+						Console.ForegroundColor = ConsoleColor.White;
+						requireRemap = true;
+					}
+					else
+					{
+						requireRemap = false;
+						done = true;
+
+						trackIdToNewPathMap[track.Id] = newPrefix;
+					}
+				}
+			}
+
+			return trackIdToNewPathMap;
+		}
+
 		// Returns a list of prefixes to strip out of the source database and replace with the standard destination drive music folder
 		// destFolder should NOT contain trailing slash, while sourceLibraryPath SHOULD contain trailing slash
 		public List<string> CopyMusicFiles(string destFolder, string sourceLibraryPath)
@@ -47,7 +91,10 @@ namespace EnginePrimeSync.DB
 				}
 
 				if (!foundPrefix)
-					prefix = RemapPrefixes(oldPrefixes, track);
+				{
+					_ = RemapPrefixes(track, true, ref prefix);
+					oldPrefixes.Add(prefix);
+				}
 				
 				var strippedPath = track.Path.Substring(prefix.Length + 1); // +1 to remove trailing slash. This now just contains the folder the file is in without the root.
 				var lastSlash = strippedPath.LastIndexOf('/');
@@ -89,33 +136,63 @@ namespace EnginePrimeSync.DB
 			return oldPrefixes;
 		}
 
-		private string RemapPrefixes(List<string> oldPrefixes, Track track)
+		// New prefix is returned.
+		private string RemapPrefixes(Track track, bool exporting, ref string oldPrefix)
 		{
 			bool done = false;
-			string prefix = null;
+			string newPrefix = null;
 
 			while (!done)
 			{
-				Console.ForegroundColor = ConsoleColor.Cyan;
-				Console.WriteLine("Please enter the prefix you wish to replace from the string below (DON'T include trailing slash): ");
-				Console.WriteLine(track.Path);
-				Console.ForegroundColor = ConsoleColor.White;
-				prefix = Console.ReadLine();
-				if (prefix == null)
-					continue;
+				if (exporting)
+				{
+					Console.ForegroundColor = ConsoleColor.Cyan;
+					Console.WriteLine("Please enter the prefix you wish to replace from the string below (DON'T include trailing slash): ");
+					Console.WriteLine(track.Path);
+					Console.ForegroundColor = ConsoleColor.White;
+					oldPrefix = Console.ReadLine();
+					if (oldPrefix == null)
+						continue;
+				}
 
-				prefix = prefix.Trim();
-				if (track.Path.IndexOf(prefix, StringComparison.CurrentCultureIgnoreCase) != 0)
+				string newPath = string.Empty;
+
+				if (!exporting)
+				{
+					Console.ForegroundColor = ConsoleColor.Cyan;
+					Console.WriteLine("Please enter the new prefix that the tracks should be remapped to.");
+					Console.WriteLine("This path must be RELATIVE to the location of your destination database folder!");
+					Console.WriteLine(@"For example, if your destination folder is D:\Music\Engine Library\ and the");
+					Console.WriteLine(@"toplevel folder containing your music is D:\Music\Archived Vinyl\ you would want to enter:");
+					Console.ForegroundColor = ConsoleColor.Yellow;
+					Console.WriteLine(@"../ArchivedVinyl (DO NOT INCLUDE TRAILING SLASH, and yes, you need to use / not \\)");
+					Console.ForegroundColor = ConsoleColor.White;
+					newPrefix = Console.ReadLine();
+					if (newPrefix == null)
+						continue;
+
+					newPrefix = newPrefix.Trim();
+					newPath = newPrefix + track.Path.Substring(oldPrefix.Length);
+				}
+
+				oldPrefix = oldPrefix.Trim();
+				if (track.Path.IndexOf(oldPrefix, StringComparison.CurrentCultureIgnoreCase) != 0)
 				{
 					Console.ForegroundColor = ConsoleColor.Red;
 					Console.WriteLine($"The path we need to remap: {track.Path}");
-					Console.WriteLine($"Does not start with: {prefix}");
+					Console.WriteLine($"Does not start with: {oldPrefix}");
 					Console.ForegroundColor = ConsoleColor.White;
 				}
 				else
 				{
 					Console.ForegroundColor = ConsoleColor.Cyan;
-					var newPath = EnginePrimeDb.EXTERNAL_MUSIC_FOLDER + track.Path.Substring(prefix.Length);
+					if (exporting)
+					{
+						newPrefix = EnginePrimeDb.EXTERNAL_MUSIC_FOLDER;
+						newPath = newPrefix + track.Path.Substring(oldPrefix.Length);
+					}
+					
+
 					Console.Write("The path from the source database: ");
 					Console.ForegroundColor = ConsoleColor.Magenta;
 					Console.WriteLine(track.Path);
@@ -135,12 +212,11 @@ namespace EnginePrimeSync.DB
 					if (!choice.Equals("y", StringComparison.CurrentCultureIgnoreCase))
 						continue;
 
-					oldPrefixes.Add(prefix);
 					done = true;
 				}
 			}
 
-			return prefix;
+			return newPrefix;
 		}
 	}
 }

@@ -10,10 +10,10 @@ namespace EnginePrimeSync.DB
 {
 	public class MainDb : EnginePrimeDb
 	{
-
+		public const string DB_NAME = "m.db";
 
 		// Expects dbPath to contain a trailing slash
-		public MainDb(string dbPath) : base(dbPath + "m.db")
+		public MainDb(string dbPath) : base(dbPath + DB_NAME)
 		{
 		}
 
@@ -41,6 +41,26 @@ namespace EnginePrimeSync.DB
 				//NOTE: DO NOT PUT QUOTES OR SINGLE QUOTES AROUND THE PATH PARAMETERS EVEN IF THEY CONTAIN SPACES, OTHERWISE THE UPDATE METHOD WON'T WORK BUT WON'T THROW AN ERROR EITHER.
 				using var command = _connection.CreateCommand();
 				command.CommandText = @"UPDATE Track SET path = REPLACE(path, $oldP, $newP)";
+				command.Parameters.AddWithValue("$oldP", searchPrefix);
+				command.Parameters.AddWithValue("$newP", replacementPrefix);
+				command.ExecuteNonQuery();
+			}
+			catch (Exception e)
+			{
+				return false;
+			}
+
+			return true;
+		}
+
+		public bool RemapTrackTablePathColumnForSingleId(int trackId, string searchPrefix, string replacementPrefix)
+		{
+			try
+			{
+				//NOTE: DO NOT PUT QUOTES OR SINGLE QUOTES AROUND THE PATH PARAMETERS EVEN IF THEY CONTAIN SPACES, OTHERWISE THE UPDATE METHOD WON'T WORK BUT WON'T THROW AN ERROR EITHER.
+				using var command = _connection.CreateCommand();
+				command.CommandText = @"UPDATE Track SET path = REPLACE(path, $oldP, $newP) WHERE id = $id";
+				command.Parameters.AddWithValue("$id", trackId);
 				command.Parameters.AddWithValue("$oldP", searchPrefix);
 				command.Parameters.AddWithValue("$newP", replacementPrefix);
 				command.ExecuteNonQuery();
@@ -93,7 +113,10 @@ namespace EnginePrimeSync.DB
 				{
 					var id = reader.GetInt32(0);
 					var dataType = reader.GetInt32(1);
-					var text = reader.GetString(2);
+					string text = null;
+
+					if (!reader.IsDBNull(2))
+						text = reader.GetString(2);
 
 					Track track = trackManager.GetTrack(id);
 					if (track == null)

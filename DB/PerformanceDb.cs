@@ -15,8 +15,10 @@ namespace EnginePrimeSync.DB
 	// Use this to read track metadata AFTER you've read basic track data from the main database class
 	public class PerformanceDb : EnginePrimeDb
 	{
+		public const string DB_NAME = "p.db";
+
 		// Expects dbPath to contain a trailing slash
-		public PerformanceDb(string dbPath) : base(dbPath + "p.db")
+		public PerformanceDb(string dbPath) : base(dbPath + DB_NAME)
 		{
 
 		}
