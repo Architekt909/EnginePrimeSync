@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31605.320
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EnginePrimeSync", "EnginePrimeSync.csproj", "{B56F2192-BFC4-474A-9A11-5C5FB361ECBD}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B56F2192-BFC4-474A-9A11-5C5FB361ECBD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B56F2192-BFC4-474A-9A11-5C5FB361ECBD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B56F2192-BFC4-474A-9A11-5C5FB361ECBD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B56F2192-BFC4-474A-9A11-5C5FB361ECBD}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {08C5A68B-0F22-401B-B9CB-58DDE3C80CE1}
+	EndGlobalSection
+EndGlobal
