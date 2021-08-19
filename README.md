@@ -152,6 +152,13 @@ or IMPORT COMPLETELY a database from an external drive. Let's go through both op
 			character. In my case, this will show up in the console as "?-", notice the ?. You may see a box or something
 			similar. DON'T FRET: The code correctly stores these paths (I've verified), this is just simply a visual
 			display issue and does NOT affect in any way the safety of copying your music files.
+			
+		2. Can you add feature X?
+			Most likely: No. If it's not something that I'd care to use, I probably won't add it. This was
+			a quick and dirty side project for me that I decided to share with everyone. I have other things
+			I need to be doing during my day and as this is free and I'm not being paid for it, I'd rather
+			do the other things that pay me. Or play video games. Or just do something else. If you program,
+			you're welcome to implement the feature and submit a pull request and I'll review it and add it.
 
 # Code notes
 This code is written quickly to maximize usefulness for me and minimize time spent working on it. It's
