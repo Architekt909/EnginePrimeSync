@@ -140,7 +140,46 @@ back to the main menu.
 
 Finally, we remap all the paths (remember that step, long ago before the copying took place?) in the DESTINATION
 databases so that your turntables (and the Engine Prime software) will be able to correctly find where the tracks are located.
-				
+
+# Option 2 Guide For Import/Export entire Database:
+	
+This will copy just the databases from a source location to your PC's Engine Library folder. It doesn't copy any music. It 
+will prompt you to fix file paths and it will also verify that these files exist so you are prevented from entering invalid values
+and screwing up your db. In theory. I'd still make backups.
+
+VERY IMPORTANT: This expects that there already exists the files "m.db" and "p.db" in your Engine Library folder.
+If you are missing them, simply run the Engine Prime software once and exit: it will create placeholder files for you.
+
+The app will attempt to auto locate your PC's Engine Library. If it fails or if it guessed wrong, you will
+can change this. It will then verify that "m.db" and "p.db" exist there. It keeps prompting you if you keep entering
+invalid values, so you can't possibly mess this part up.
+
+Next you're prompted for the source drive letter. This is from WHERE YOU ARE COPYING FROM. If your external drive was say
+F:, you'd enter any of the following: f, f:, f:\
+The app will then verify that this is valid and that AT THE ROOT LEVEL it can find Engine Library\m.db and p.db.
+This was designed to import from external drives, so it most likely won't help you to import from any other source like
+say a network share or different directory on your computer.
+
+Next, the app iterates over every single track in the database. It first asks you to enter the new prefix we should
+use for the destination paths for the local files. As the app says, this should be relative to where your PC's m.db
+file is located. For example, if we're copying to D:\Music\Engine Library\ (m.db is in here) and our music is located at
+D:\Music\mp3s, you'd enter: ../mp3s
+YOU MUST USE / NOT \ AS THE ENGINE PRIME SOFTWARE EXPECTS PATHS IN THIS FORMAT. If you don't understand how relative paths
+work or how to figure them out, Google it. 
+
+You will then be shown what the remap will look like and asked to accept. If you say no, you go back into the loop to try again.
+
+DON'T WORRY IF YOU MESS THIS UP: What happens is that for EVERY SINGLE TRACK we check to see if that track exists on your hard drive.
+If there's an error, it will print out where it tried to find the file at (to help you diagnose what you entered wrong) and then
+you go back to that loop where you enter in the relative prefix to remap.
+
+This process may happen more than once if, like me, you have tracks stored in different folders. So don't worry if your collection
+is scattered, like mine.
+
+After that, you'll see what can be a slow process where it outputs the current track it's updating and the total number of tracks to
+update. I could probably make this part faster by doing some sort of database batching, but honestly, I find database programming to
+be so mind numbingly boring that I'm not that interested. If this bothers you, feel free to edit the code and submit a pull request.
+I know enough database knowledge to get things done, just not in the most optimal way.
 
 # FAQ
 		1. How come some characters show up strangely? 
