@@ -64,82 +64,82 @@ or IMPORT COMPLETELY a database from an external drive. Let's go through both op
 1. EXPORT LOCAL db to EXTERNAL DRIVE (will copy music files too)
 2. IMPORT database FROM EXTERNAL DRIVE (doesn't copy music)
 
-		Option 1 Guide:
-		This will completely wipe your external hard drive's Music folder and the m.db and p.db files located there. This option
-		is meant to do a total mirror of what you have on your PC. Upon choosing this, it attemps to auto find where your database
-		files are stored and will show you this path if it does. If it doesn't, you are prompted to enter a path. Regardless,
-		you have the option to change the path from the default. Enter The FULL path to the folder containing m.db/p.db. Trailing
-		slash doesn't matter in this case. For example, if your m.db file is located at D:\DropBox\Music\Engine Library\m.db you'd
-		enter: D:\DropBox\Music\Engine Library\
-		
-		The program will check to see if those files exist. If they don't, you'll be placed in a loop where you keep getting asked
-		for the proper folder until it's able to find the database files it needs. You can't screw this part up.
-		
-		Next it asks you for the destination drive LETTER of the external drive. If you external drive is F:, you can enter any of the following:
-		F, F:, F:\
-		I suppose this doesn't actually have to be removable media like a thumb drive. It could be any drive. If it's a network drive you'll
-		have to map it though first so that you can assign it a drive letter.
-		
-		Immediately after this, the app reads both your m.db and p.db files building all the internal data structures it needs. It does this
-		silently. Only if there is an error will you get something printed to the screen. if there's an error reading your DB, the app
-		will abort and return you to the main menu.
-		
-		THIS NEXT STEP, IN RED LETTERS, INFORMS YOU THAT UPON PRESSING ENTER IT WILL DELETE THE ENTIRE MUSIC FOLDER AND ITS CONTENTS ON THE
-		DESTINATION DRIVE!!! IF YOU HAVE NOT BACKED UP YET, DO SO NOW! ALSO BE DAMN SURE YOU ENTERED THE CORRECT DRIVE LETTER!
-		You can either hit CTRL-C (on PC at least, not sure about Mac) or just close the app if you're scared and want to quit.
-		
-		Next, the app will copy all the music found in your source database to your destination drive.
-		Here's the thing: the paths that are stored in the database on your PC are different than those stored
-		on the external drive. Paths are also stored relative to the location of the database files. As an example, I have my
-		music stored in D:\DropBox\Music\Archived Vinyl. My Engine Prime database is located at D:\DropBox\Music\Engine Library.
-		My tracks, as stored in my source database, appear with this path:
-		
-		../Archived Vinyl/<track directory and filename>
-		
-		On the destination drive however, all music data has to be placed in the Engine Library\Music folder. So we have to remap
-		the prefix or root directory that contains the tracks from the source drive to the destination drive. During this file
-		copy stage, the first time we encounter a track that we haven't found a matching prefix for that we need to remap,
-		the app will prompt you with the following:
-		
-		Please enter the prefix you wish to replace from the string below (DON'T include trailing slash):
-		../Archived Vinyl/SomeArtist - SomeAlbum/SomeTrack.mp3
-		
-		What we need to do here is choose the text to STRIP OUT from that path. That way the app can create the new
-		and correct path on the external drive. Enter the top level directory that contains all your music.
-		DON'T INCLUDE THE TRAILING SLASH. So in this case, for me, I'd enter:
-		
-		../Archived Vinyl
-		
-		Don't be scared: what happens next is that we validate your input. If you mistyped something and we can't find what
-		you entered at the start of the path's string, we'll prompt you again.
-		
-		You then get another confirmation prompt. This will show you the path we are converting FROM, aka the source db path,
-		and what that remap will look like on your external drive. Since we know that files on external drives have to be stored
-		in the Music/ folder, we automatically use that for you. VERIFY THAT THIS LOOKS LEGIT. It should look something like this:
-		Music/SomeArtist - SomeAlbum/SomeTrack.mp3
-		
-		Your case will differ, especially if you have nested directories, but the whole point of this step is to strip out
-		the prefix from the source folder to remap it to the destination folder. I hope that isn't confusing, I don't know how
-		else to explain it.
-		
-		The program then starts copying all your files. IF IT ENCOUNTERS A NEW PREFIX THAT IT HASN'T SEEN YET, you will go through
-		the previous prompt again. If you're like me, you don't just have 1 folder you placed all your music files in, you have
-		multiple. So in my case, I was prompted twice to change my prefixes.
-		
-		This step takes a while and depends on the speed of the drive and the interface it's plugged into. You'll be shown
-		the progress with a counter so you have an idea of how far along you are.
-		
-		If there's an error at this stage, we abort and return to the main menu. Yes, the Music directory on that external drive now 
-		contains only partial data
-		
-					IF YOU ENCOUNTER ANY ERRORS, JUST RE-RUN THE EXPORT, AS IT OVERWRITES EVERYTHING YOU'LL BE
-					GUARANTEED TO EVENTUALLY GET EVERYTHING COPIED SAFELY.
-						
-		Next, we copy over the m.db and p.db files to your external drive. If there's an error, you're informed and dumped
-		back to the main menu. 
-		
-		Finally, we remap all the paths (remember that step, long ago before the copying took place?) in the DESTINATION
-		databases so that your turntables (and the Engine Prime software) will be able to correctly find where the tracks are located.
+# Option 1 Guide For Import/Export entire Database:
+This will completely wipe your external hard drive's Music folder and the m.db and p.db files located there. This option
+is meant to do a total mirror of what you have on your PC. Upon choosing this, it attemps to auto find where your database
+files are stored and will show you this path if it does. If it doesn't, you are prompted to enter a path. Regardless,
+you have the option to change the path from the default. Enter The FULL path to the folder containing m.db/p.db. Trailing
+slash doesn't matter in this case. For example, if your m.db file is located at D:\DropBox\Music\Engine Library\m.db you'd
+enter: D:\DropBox\Music\Engine Library\
+
+The program will check to see if those files exist. If they don't, you'll be placed in a loop where you keep getting asked
+for the proper folder until it's able to find the database files it needs. You can't screw this part up.
+
+Next it asks you for the destination drive LETTER of the external drive. If you external drive is F:, you can enter any of the following:
+F, F:, F:\
+I suppose this doesn't actually have to be removable media like a thumb drive. It could be any drive. If it's a network drive you'll
+have to map it though first so that you can assign it a drive letter.
+
+Immediately after this, the app reads both your m.db and p.db files building all the internal data structures it needs. It does this
+silently. Only if there is an error will you get something printed to the screen. if there's an error reading your DB, the app
+will abort and return you to the main menu.
+
+THIS NEXT STEP, IN RED LETTERS, INFORMS YOU THAT UPON PRESSING ENTER IT WILL DELETE THE ENTIRE MUSIC FOLDER AND ITS CONTENTS ON THE
+DESTINATION DRIVE!!! IF YOU HAVE NOT BACKED UP YET, DO SO NOW! ALSO BE DAMN SURE YOU ENTERED THE CORRECT DRIVE LETTER!
+You can either hit CTRL-C (on PC at least, not sure about Mac) or just close the app if you're scared and want to quit.
+
+Next, the app will copy all the music found in your source database to your destination drive.
+Here's the thing: the paths that are stored in the database on your PC are different than those stored
+on the external drive. Paths are also stored relative to the location of the database files. As an example, I have my
+music stored in D:\DropBox\Music\Archived Vinyl. My Engine Prime database is located at D:\DropBox\Music\Engine Library.
+My tracks, as stored in my source database, appear with this path:
+
+../Archived Vinyl/<track directory and filename>
+
+On the destination drive however, all music data has to be placed in the Engine Library\Music folder. So we have to remap
+the prefix or root directory that contains the tracks from the source drive to the destination drive. During this file
+copy stage, the first time we encounter a track that we haven't found a matching prefix for that we need to remap,
+the app will prompt you with the following:
+
+Please enter the prefix you wish to replace from the string below (DON'T include trailing slash):
+../Archived Vinyl/SomeArtist - SomeAlbum/SomeTrack.mp3
+
+What we need to do here is choose the text to STRIP OUT from that path. That way the app can create the new
+and correct path on the external drive. Enter the top level directory that contains all your music.
+DON'T INCLUDE THE TRAILING SLASH. So in this case, for me, I'd enter:
+
+../Archived Vinyl
+
+Don't be scared: what happens next is that we validate your input. If you mistyped something and we can't find what
+you entered at the start of the path's string, we'll prompt you again.
+
+You then get another confirmation prompt. This will show you the path we are converting FROM, aka the source db path,
+and what that remap will look like on your external drive. Since we know that files on external drives have to be stored
+in the Music/ folder, we automatically use that for you. VERIFY THAT THIS LOOKS LEGIT. It should look something like this:
+Music/SomeArtist - SomeAlbum/SomeTrack.mp3
+
+Your case will differ, especially if you have nested directories, but the whole point of this step is to strip out
+the prefix from the source folder to remap it to the destination folder. I hope that isn't confusing, I don't know how
+else to explain it.
+
+The program then starts copying all your files. IF IT ENCOUNTERS A NEW PREFIX THAT IT HASN'T SEEN YET, you will go through
+the previous prompt again. If you're like me, you don't just have 1 folder you placed all your music files in, you have
+multiple. So in my case, I was prompted twice to change my prefixes.
+
+This step takes a while and depends on the speed of the drive and the interface it's plugged into. You'll be shown
+the progress with a counter so you have an idea of how far along you are.
+
+If there's an error at this stage, we abort and return to the main menu. Yes, the Music directory on that external drive now 
+contains only partial data
+
+			IF YOU ENCOUNTER ANY ERRORS, JUST RE-RUN THE EXPORT, AS IT OVERWRITES EVERYTHING YOU'LL BE
+			GUARANTEED TO EVENTUALLY GET EVERYTHING COPIED SAFELY.
+
+Next, we copy over the m.db and p.db files to your external drive. If there's an error, you're informed and dumped
+back to the main menu. 
+
+Finally, we remap all the paths (remember that step, long ago before the copying took place?) in the DESTINATION
+databases so that your turntables (and the Engine Prime software) will be able to correctly find where the tracks are located.
 				
 
 # FAQ
