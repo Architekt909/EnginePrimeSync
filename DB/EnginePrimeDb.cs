@@ -14,6 +14,8 @@ namespace EnginePrimeSync.DB
 		protected bool _disposed;
 
 		public const string EXTERNAL_MUSIC_FOLDER = @"Music";
+		public const string ENGINE_FOLDER = @"Engine Library";
+		public const string ENGINE_FOLDER_SLASH = ENGINE_FOLDER + @"\";
 
 		protected EnginePrimeDb(string dbPath)
 		{

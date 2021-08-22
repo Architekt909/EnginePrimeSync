@@ -34,6 +34,190 @@ namespace EnginePrimeSync.DB
 			return true;
 		}
 
+		public bool DeletePlaylists()
+		{
+			try
+			{
+				using var command = _connection.CreateCommand();
+				command.CommandText = @"DELETE FROM PlaylistTrackList WHERE playlistId >= 0";
+				command.ExecuteNonQuery();
+			}
+			catch (Exception e)
+			{
+				return false;
+			}
+
+			try
+			{
+				using var command = _connection.CreateCommand();
+				command.CommandText = @"DELETE FROM Playlist WHERE id >= 0";
+				command.ExecuteNonQuery();
+			}
+			catch (Exception e)
+			{
+				return false;
+			}
+
+			
+			return true;
+		}
+
+		public bool ReadPlaylists(PlaylistManager playlistManager)
+		{
+			if (playlistManager.NumPlaylists() != 0)
+				return false;
+
+			if (!ParsePlaylistTable(playlistManager))
+				return false;
+
+			return ParsePlaylistTrackListTable(playlistManager);
+		}
+
+		private bool ParsePlaylistTable(PlaylistManager playlistManager)
+		{
+			using var command = _connection.CreateCommand();
+			command.CommandText = @"SELECT id,title FROM Playlist ORDER BY id";
+			try
+			{
+				using var reader = command.ExecuteReader();
+				while (reader.Read())
+				{
+					Playlist p = new Playlist(reader.GetInt32(0), reader.GetString(1));
+					playlistManager.AddPlaylist(p);
+				}
+			}
+			catch (Exception e)
+			{
+				return false;
+			}
+
+			return true;
+		}
+
+		private bool ParsePlaylistTrackListTable(PlaylistManager playlistManager)
+		{
+			var ids = playlistManager.GetPlaylistIds();
+			foreach (var id in ids)
+			{
+				var playlist = playlistManager.GetPlaylistById(id);
+
+				try
+				{
+					using var command = _connection.CreateCommand();
+					command.CommandText = @"SELECT trackId,trackIdInOriginDatabase,databaseUuid,trackNumber FROM PlaylistTrackList WHERE playlistId = $id ORDER BY trackNumber";
+					command.Parameters.AddWithValue("$id", id);
+					using var reader = command.ExecuteReader();
+
+					
+
+					while (reader.Read())
+						playlist.AddTrack(reader.GetInt32(0), reader.GetInt32(1), reader.GetString(2), reader.GetInt32(3));
+				}
+				catch (Exception e)
+				{
+					Console.ForegroundColor = ConsoleColor.Red;
+					Console.WriteLine($"Error getting track list for playlist ID: {playlist.Id}, title: {playlist.Title}");
+					Console.ForegroundColor = ConsoleColor.White;
+					return false;
+				}
+			}
+
+			return true;
+		}
+
+		public bool WritePlaylists(PlaylistManager playlistManager)
+		{
+			var ids = playlistManager.GetPlaylistIds();
+			foreach (var id in ids)
+			{
+				var playlist = playlistManager.GetPlaylistById(id);
+				if (!WriteToPlaylistTable(playlist))
+				{
+					Console.ForegroundColor = ConsoleColor.Red;
+					Console.WriteLine($"Error writing playlist ID: {playlist.Id}, title: {playlist.Title}");
+					return false;
+				}
+
+				if (!WritePlaylistTracklistTable(playlist))
+				{
+					Console.ForegroundColor = ConsoleColor.Red;
+					Console.WriteLine($"Error writing playlist track list for playlist ID: {playlist.Id}, title: {playlist.Title}");
+					return false;
+				}
+			}
+
+			return true;
+		}
+
+		private bool WritePlaylistTracklistTable(Playlist p)
+		{
+			try
+			{
+				using var transaction = _connection.BeginTransaction();
+				using var command = _connection.CreateCommand();
+				command.CommandText = @"INSERT INTO PlaylistTrackList (playlistId, trackId, trackIdInOriginDatabase, databaseUuid, trackNumber)
+										VALUES ($pId, $trackId, $originId, $uuid, $trackNum)";
+
+				var paramPlaylistId = command.CreateParameter();
+				paramPlaylistId.ParameterName = "$pId";
+				command.Parameters.Add(paramPlaylistId);
+				paramPlaylistId.Value = p.Id;
+
+				var paramTrackId = command.CreateParameter();
+				paramTrackId.ParameterName = "$trackId";
+				command.Parameters.Add(paramTrackId);
+
+				var paramOriginId = command.CreateParameter();
+				paramOriginId.ParameterName = "$originId";
+				command.Parameters.Add(paramOriginId);
+
+				var paramUuid = command.CreateParameter();
+				paramUuid.ParameterName = "$uuid";
+				command.Parameters.Add(paramUuid);
+
+				var paramTrackNum = command.CreateParameter();
+				paramTrackNum.ParameterName = "$trackNum";
+				command.Parameters.Add(paramTrackNum);
+
+				foreach (var track in p.Tracks)
+				{
+					paramTrackId.Value = track.TrackId;
+					paramOriginId.Value = track.TrackIdInOriginDb;
+					paramUuid.Value = track.DatabaseUuid;
+					paramTrackNum.Value = track.TrackOrder;
+
+					command.ExecuteNonQuery();
+				}
+
+				transaction.Commit();
+
+			}
+			catch (Exception e)
+			{
+				return false;
+			}
+
+			return true;
+		}
+
+		private bool WriteToPlaylistTable(Playlist p)
+		{
+			try
+			{
+				using var command = _connection.CreateCommand();
+				command.CommandText = @"INSERT INTO Playlist (id, title) VALUES ($id, $title)";
+				command.Parameters.AddWithValue("$id", p.Id);
+				command.Parameters.AddWithValue("$title", p.Title);
+				command.ExecuteNonQuery();
+			}
+			catch (Exception e)
+			{
+				return false;
+			}
+
+			return true;
+		}
+
 		public bool RemapTrackTablePathColumn(string searchPrefix, string replacementPrefix)
 		{
 			try

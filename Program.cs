@@ -29,6 +29,8 @@ namespace EnginePrimeSync
 
 				if (choice == 1)
 					ImportExportEntireDatabase();
+				else if (choice == 2)
+					ImportExportPlaylists();
 			}
 			while (choice is >= 1 and <= 3);
 		}
@@ -36,6 +38,12 @@ namespace EnginePrimeSync
 		private static void ImportExportEntireDatabase()
 		{
 			var exporter = new ExportDatabase();
+			exporter.Run();
+		}
+
+		private static void ImportExportPlaylists()
+		{
+			var exporter = new ExportPlaylists();
 			exporter.Run();
 		}
 		

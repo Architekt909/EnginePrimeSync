@@ -8,13 +8,10 @@ using EnginePrimeSync.DB;
 
 namespace EnginePrimeSync.Exporters
 {
-	public class ExportDatabase
+	public class ExportDatabase : ExporterBase
 	{
-		private readonly TrackManager _trackManager = new TrackManager();
-		private MainDb _mainDb;
-		private PerformanceDb _perfDb;
-
-
+		
+		
 		public ExportDatabase()
 		{
 
@@ -22,34 +19,13 @@ namespace EnginePrimeSync.Exporters
 
 		private bool ParseDatabases(string folder)
 		{
-			try
-			{
-				_mainDb = new MainDb(folder);
-				_mainDb.OpenDb();
-				_mainDb.ReadTrackInfo(_trackManager);
-				_mainDb.CloseDb();
-
-				_perfDb = new PerformanceDb(folder);
-				_perfDb.OpenDb();
-				_perfDb.ReadPerformanceInfo(_trackManager);
-				_perfDb.CloseDb();
-			}
-			catch (Exception e)
-			{
-				Console.ForegroundColor = ConsoleColor.Red;
-				Console.WriteLine("There was an error opening and/or parsing one or both of the databases.");
-				Console.WriteLine("Please check that the following exist and aren't locked:");
-				Console.WriteLine(_mainDb.GetDbPath());
-				Console.WriteLine(_perfDb.GetDbPath());
-				Console.ForegroundColor = ConsoleColor.White;
-
+			if (!ParseMainDatabase(folder))
 				return false;
-			}
 
-			return true;
+			return ParsePerformanceDatabase(folder);
 		}
-		
-		public void Run()
+
+		public override void Run()
 		{
 			Console.ForegroundColor = ConsoleColor.Red;
 			Console.WriteLine("All of these choices will result in a complete overwrite of the destination db.\n");
@@ -76,7 +52,7 @@ namespace EnginePrimeSync.Exporters
 			var sourceDrive = GetDriveLetter(false);
 
 			// Verify m.db and p.db exist on the destination drive
-			var sourceFolder = sourceDrive + @"Engine Library\";
+			var sourceFolder = sourceDrive + EnginePrimeDb.ENGINE_FOLDER_SLASH;
 
 			while (!File.Exists(sourceFolder + MainDb.DB_NAME) || !File.Exists(sourceFolder + PerformanceDb.DB_NAME))
 			{
@@ -167,94 +143,7 @@ namespace EnginePrimeSync.Exporters
 			Console.ReadLine();
 		}
 
-		private string GetLocalMusicLibraryPath()
-		{
-			var musicPath = Environment.GetFolderPath(Environment.SpecialFolder.MyMusic) + @"\Engine Library\";
-			bool useDefault = true;
-
-			if (File.Exists(musicPath + MainDb.DB_NAME) && File.Exists(musicPath + PerformanceDb.DB_NAME))
-			{
-				Console.WriteLine($"Found local databases at: {musicPath}");
-				Console.WriteLine("Would you like to use this default?");
-
-				bool invalid = true;
-				while (invalid)
-				{
-					Console.Write("[Y/n]: ");
-					var str = Console.ReadLine();
-					if (str == null)
-						continue;
-
-					str = str.Trim();
-
-					if ((str.Length == 0) || str.Equals("y", StringComparison.CurrentCultureIgnoreCase))
-					{
-						useDefault = true;
-						invalid = false;
-					}
-					else if (str.Equals("n", StringComparison.CurrentCultureIgnoreCase))
-					{
-						useDefault = false;
-						invalid = false;
-					}
-				}
-
-			}
-			else
-				useDefault = false;
-
-			while (!useDefault)
-			{
-				Console.WriteLine($"Enter full path to the LOCAL PC FOLDER containing {MainDb.DB_NAME} and {PerformanceDb.DB_NAME}:");
-				musicPath = Console.ReadLine();
-				if (musicPath == null)
-					continue;
-
-				if (musicPath[^1] != '\\')
-					musicPath += '\\';
-
-				if (!File.Exists(musicPath + MainDb.DB_NAME) || !File.Exists(musicPath + PerformanceDb.DB_NAME))
-				{
-					Console.ForegroundColor = ConsoleColor.Red;
-					Console.WriteLine($"Can't find {MainDb.DB_NAME} and/or {PerformanceDb.DB_NAME} at: {musicPath}");
-					Console.ForegroundColor = ConsoleColor.White;
-				}
-				else
-					useDefault = true;
-			}
-
-			return musicPath;
-		}
-
-		private string GetDriveLetter(bool driveIsDestinationDbLocation)
-		{
-			string destDrive = null;
-			while (destDrive == null)
-			{
-				Console.Write(driveIsDestinationDbLocation ? "Enter DESTINATION DRIVE LETTER! " : "Enter SOURCE DRIVE LETTER! ");
-				Console.WriteLine("Just drive letter, i.e. F or F: or F:\\!");
-
-				destDrive = Console.ReadLine();
-				if (destDrive == null)
-					continue;
-
-				destDrive = destDrive.Trim();
-				if (destDrive.Length == 1)
-					destDrive += ":\\";
-				else if (destDrive.Length == 2)
-					destDrive += '\\';
-
-				if (!Directory.Exists(destDrive))
-				{
-					Console.ForegroundColor = ConsoleColor.Red;
-					Console.WriteLine($"Invalid destination directory: {destDrive}");
-					Console.ForegroundColor = ConsoleColor.White;
-					destDrive = null;
-				}
-			}
-
-			return destDrive;
-		}
+		
 
 		private void ExportLocalDb()
 		{
@@ -276,7 +165,7 @@ namespace EnginePrimeSync.Exporters
 			Console.ForegroundColor = ConsoleColor.White;
 			Console.ReadLine();
 
-			string destLibraryPath = destDrive + @"Engine Library\";
+			string destLibraryPath = destDrive + EnginePrimeDb.ENGINE_FOLDER_SLASH;
 
 			if (Directory.Exists(destLibraryPath + EnginePrimeDb.EXTERNAL_MUSIC_FOLDER))
 			{
