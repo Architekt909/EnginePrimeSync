@@ -31,6 +31,8 @@ namespace EnginePrimeSync
 					ImportExportEntireDatabase();
 				else if (choice == 2)
 					ImportExportPlaylists();
+				else if (choice == 3)
+					ImportExportCrates();
 			}
 			while (choice is >= 1 and <= 3);
 		}
@@ -47,5 +49,9 @@ namespace EnginePrimeSync
 			exporter.Run();
 		}
 		
+		private static void ImportExportCrates()
+		{
+
+		}
 	}
 }
