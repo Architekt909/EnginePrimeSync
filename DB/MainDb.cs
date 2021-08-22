@@ -22,7 +22,7 @@ namespace EnginePrimeSync.DB
 		// This assumes trackManager doesn't contain any data yet
 		public bool ReadTrackInfo(TrackManager trackManager)
 		{
-			if (trackManager.NumTracks() != 0)
+			if (trackManager.Count() != 0)
 				return false;
 
 			if (!ParseTrackTable(trackManager))
@@ -30,6 +30,121 @@ namespace EnginePrimeSync.DB
 
 			if (!ParseMetadataTable(trackManager))
 				return false;
+
+			return true;
+		}
+
+		public bool DeleteCrates()
+		{
+			var views = new [] { "CrateTrackList", "CrateParentList", "CrateHierarchy", "Crate" };
+			var ids = new[] { "crateId", "crateOriginId", "crateId", "id" };
+			for (int i = 0; i < views.Length; i++)
+			{
+				var view = views[i];
+				var id = ids[i];
+
+				try
+				{
+					using var command = _connection.CreateCommand();
+					command.CommandText = $"DELETE FROM {view} WHERE {id} >= 0";
+					command.ExecuteNonQuery();
+				}
+				catch (Exception e)
+				{
+					Console.ForegroundColor = ConsoleColor.Red;
+					Console.WriteLine($"Error trying to delete from {view}");
+					Console.ForegroundColor = ConsoleColor.White;
+					return false;
+				}
+			}
+
+			return true;
+		}
+
+		public bool ReadCrates(CrateManager crateManager)
+		{
+			if (crateManager.Count() != 0)
+				return false;
+
+			if (!ParseCrateTable(crateManager))
+				return false;
+
+			if (!ParseCrateParentListTable(crateManager))
+				return false;
+
+			crateManager.FindParentCrateIds();
+
+			return ParseCrateTrackListTable(crateManager);
+		}
+
+		private bool ParseCrateTable(CrateManager crateManager)
+		{
+			using var command = _connection.CreateCommand();
+			command.CommandText = @"SELECT id,title,path FROM Crate ORDER BY id";
+			try
+			{
+				using var reader = command.ExecuteReader();
+				while (reader.Read())
+				{
+					Crate c = new Crate(reader.GetInt32(0), reader.GetString(1), reader.GetString(2));
+					crateManager.Add(c);
+				}
+			}
+			catch (Exception e)
+			{
+				return false;
+			}
+
+			return true;
+		}
+
+		private bool ParseCrateParentListTable(CrateManager crateManager)
+		{
+			using var command = _connection.CreateCommand();
+			command.CommandText = @"SELECT crateOriginId,crateParentId FROM CrateParentList ORDER BY crateOriginId";
+			try
+			{
+				using var reader = command.ExecuteReader();
+				while (reader.Read())
+				{
+					int crateId = reader.GetInt32(0);
+					int immediateParentId = reader.GetInt32(1);
+
+					var crate = crateManager.GetById(crateId);
+					crate.ImmediateParentCrateId = immediateParentId;
+				}
+			}
+			catch (Exception e)
+			{
+				return false;
+			}
+
+			return false;
+		}
+
+		private bool ParseCrateTrackListTable(CrateManager crateManager)
+		{
+			var ids = crateManager.GetIds();
+			foreach (var id in ids)
+			{
+				Crate crate = crateManager.GetById(id);
+
+				try
+				{
+					using var command = _connection.CreateCommand();
+					command.CommandText = @"SELECT trackId FROM CrateTrackList WHERE crateId = $id";
+					command.Parameters.AddWithValue("$id", id);
+
+					using var reader = command.ExecuteReader();
+
+					while (reader.Read())
+						crate.AddTrackId(reader.GetInt32(0));
+				}
+				catch (Exception e)
+				{
+					return false;
+				}
+			}
 
 			return true;
 		}
@@ -64,7 +179,7 @@ namespace EnginePrimeSync.DB
 
 		public bool ReadPlaylists(PlaylistManager playlistManager)
 		{
-			if (playlistManager.NumPlaylists() != 0)
+			if (playlistManager.Count() != 0)
 				return false;
 
 			if (!ParsePlaylistTable(playlistManager))
@@ -83,7 +198,7 @@ namespace EnginePrimeSync.DB
 				while (reader.Read())
 				{
 					Playlist p = new Playlist(reader.GetInt32(0), reader.GetString(1));
-					playlistManager.AddPlaylist(p);
+					playlistManager.Add(p);
 				}
 			}
 			catch (Exception e)
@@ -96,10 +211,10 @@ namespace EnginePrimeSync.DB
 
 		private bool ParsePlaylistTrackListTable(PlaylistManager playlistManager)
 		{
-			var ids = playlistManager.GetPlaylistIds();
+			var ids = playlistManager.GetIds();
 			foreach (var id in ids)
 			{
-				var playlist = playlistManager.GetPlaylistById(id);
+				var playlist = playlistManager.GetById(id);
 
 				try
 				{
@@ -108,15 +223,13 @@ namespace EnginePrimeSync.DB
 					command.Parameters.AddWithValue("$id", id);
 					using var reader = command.ExecuteReader();
 
-					
-
 					while (reader.Read())
 						playlist.AddTrack(reader.GetInt32(0), reader.GetInt32(1), reader.GetString(2), reader.GetInt32(3));
 				}
 				catch (Exception e)
 				{
 					Console.ForegroundColor = ConsoleColor.Red;
-					Console.WriteLine($"Error getting track list for playlist ID: {playlist.Id}, title: {playlist.Title}");
+					Console.WriteLine($"Error getting track list for playlist ID: {playlist.Id}, title: {playlist.Name}");
 					Console.ForegroundColor = ConsoleColor.White;
 					return false;
 				}
@@ -127,21 +240,21 @@ namespace EnginePrimeSync.DB
 
 		public bool WritePlaylists(PlaylistManager playlistManager)
 		{
-			var ids = playlistManager.GetPlaylistIds();
+			var ids = playlistManager.GetIds();
 			foreach (var id in ids)
 			{
-				var playlist = playlistManager.GetPlaylistById(id);
+				var playlist = playlistManager.GetById(id);
 				if (!WriteToPlaylistTable(playlist))
 				{
 					Console.ForegroundColor = ConsoleColor.Red;
-					Console.WriteLine($"Error writing playlist ID: {playlist.Id}, title: {playlist.Title}");
+					Console.WriteLine($"Error writing playlist ID: {playlist.Id}, title: {playlist.Name}");
 					return false;
 				}
 
 				if (!WritePlaylistTracklistTable(playlist))
 				{
 					Console.ForegroundColor = ConsoleColor.Red;
-					Console.WriteLine($"Error writing playlist track list for playlist ID: {playlist.Id}, title: {playlist.Title}");
+					Console.WriteLine($"Error writing playlist track list for playlist ID: {playlist.Id}, title: {playlist.Name}");
 					return false;
 				}
 			}
@@ -207,7 +320,7 @@ namespace EnginePrimeSync.DB
 				using var command = _connection.CreateCommand();
 				command.CommandText = @"INSERT INTO Playlist (id, title) VALUES ($id, $title)";
 				command.Parameters.AddWithValue("$id", p.Id);
-				command.Parameters.AddWithValue("$title", p.Title);
+				command.Parameters.AddWithValue("$title", p.Name);
 				command.ExecuteNonQuery();
 			}
 			catch (Exception e)
@@ -268,7 +381,7 @@ namespace EnginePrimeSync.DB
 				while (reader.Read())
 				{
 					Track t = new Track(reader.GetInt32(0), reader.GetString(1), reader.GetString(2));
-					trackManager.AddTrack(t);
+					trackManager.Add(t);
 				}
 			}
 			catch (SqliteException e)
@@ -302,13 +415,13 @@ namespace EnginePrimeSync.DB
 					if (!reader.IsDBNull(2))
 						text = reader.GetString(2);
 
-					Track track = trackManager.GetTrack(id);
+					Track track = trackManager.GetById(id);
 					if (track == null)
 						return false;	// Shouldn't happen as we'll read in all track data before calling this method
 
 					switch (dataType)
 					{
-						case 1: track.Title = text; break;
+						case 1: track.Name = text; break;
 						case 2: track.Artist = text; break;
 						case 3: track.Album = text; break;
 						case 4: track.Genre = text; break;

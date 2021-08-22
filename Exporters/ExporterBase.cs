@@ -4,17 +4,12 @@ using EnginePrimeSync.DB;
 
 namespace EnginePrimeSync.Exporters
 {
-	public abstract class ExporterBase
+	public abstract class ExporterBase<T> where T : DbObject
 	{
-		protected readonly TrackManager _trackManager = new TrackManager();
 		protected MainDb _mainDb;
 		protected PerformanceDb _perfDb;
+		protected DbObjectManager<T> _objectManager;
 		
-
-		protected ExporterBase()
-		{
-		}
-
 		public abstract void Run();
 
 		protected string GetLocalMusicLibraryPath()
@@ -133,52 +128,5 @@ namespace EnginePrimeSync.Exporters
 			return false;
 		}
 
-		// Just the top level folder with trailing slash
-		protected virtual bool ParseMainDatabase(string folder)
-		{
-			try
-			{
-				_mainDb = new MainDb(folder);
-				_mainDb.OpenDb();
-				_mainDb.ReadTrackInfo(_trackManager);
-				_mainDb.CloseDb();
-			}
-			catch (Exception e)
-			{
-				Console.ForegroundColor = ConsoleColor.Red;
-				Console.WriteLine($"There was an error opening and/or parsing {_mainDb.GetDbPath()}.");
-				Console.WriteLine("Please check that the following exists and isn't locked:");
-				Console.WriteLine(_mainDb.GetDbPath());
-				Console.ForegroundColor = ConsoleColor.White;
-
-				return false;
-			}
-
-			return true;
-		}
-
-		// Just the top level folder with trailing slash
-		protected virtual bool ParsePerformanceDatabase(string folder)
-		{
-			try
-			{
-				_perfDb = new PerformanceDb(folder);
-				_perfDb.OpenDb();
-				_perfDb.ReadPerformanceInfo(_trackManager);
-				_perfDb.CloseDb();
-			}
-			catch (Exception e)
-			{
-				Console.ForegroundColor = ConsoleColor.Red;
-				Console.WriteLine($"There was an error opening and/or parsing {_perfDb.GetDbPath()}.");
-				Console.WriteLine("Please check that the following exists and isn't locked:");
-				Console.WriteLine(_perfDb.GetDbPath());
-				Console.ForegroundColor = ConsoleColor.White;
-
-				return false;
-			}
-
-			return true;
-		}
 	}
 }

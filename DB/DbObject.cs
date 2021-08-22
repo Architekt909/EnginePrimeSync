@@ -6,8 +6,14 @@ using System.Threading.Tasks;
 
 namespace EnginePrimeSync.DB
 {
-	public class PlaylistManager : DbObjectManager<Playlist>
+	public class DbObject
 	{
+		public int Id { get; protected set; }
+		public string Name { get; set; }
 
+		protected DbObject(int id)
+		{
+			Id = id;
+		}
 	}
 }

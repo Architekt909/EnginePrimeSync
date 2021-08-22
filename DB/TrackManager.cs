@@ -8,21 +8,8 @@ using System.Threading.Tasks;
 namespace EnginePrimeSync.DB
 {
 	
-	public class TrackManager
+	public class TrackManager : DbObjectManager<Track>
 	{
-		private Dictionary<int, Track> _idToTrackMap = new Dictionary<int, Track>();
-
-		public TrackManager()
-		{
-		}
-
-		public void AddTrack(Track track) => _idToTrackMap[track.Id] = track;
-		public Track GetTrack(int id) => _idToTrackMap.ContainsKey(id) ? _idToTrackMap[id] : null;
-		public int NumTracks() => _idToTrackMap.Count;
-		public void Clear() => _idToTrackMap.Clear();
-
-
-
 		// Doesn't copy any files. Returns map of track ID to new path string that should be set. Should include trailing slash
 		public Dictionary<int, string> RemapPrefixesForImporting(string destLibraryFolder)
 		{
@@ -32,7 +19,7 @@ namespace EnginePrimeSync.DB
 			string oldPrefix = EnginePrimeDb.EXTERNAL_MUSIC_FOLDER;
 			string newPrefix = null;
 
-			foreach (var kvp in _idToTrackMap)
+			foreach (var kvp in _idToObjectMap)
 			{
 				var track = kvp.Value;
 				bool done = false;
@@ -72,7 +59,7 @@ namespace EnginePrimeSync.DB
 			var oldPrefixes = new List<string>();
 			int count = 1;
 
-			foreach (var kvp in _idToTrackMap)
+			foreach (var kvp in _idToObjectMap)
 			{
 				var track = kvp.Value;
 
@@ -119,7 +106,7 @@ namespace EnginePrimeSync.DB
 				var fullDestFilePath = destFolder + "/" + strippedPath;
 				try
 				{
-					Console.WriteLine($"Copying file {count}/{_idToTrackMap.Count}: {fullDestFilePath}");
+					Console.WriteLine($"Copying file {count}/{_idToObjectMap.Count}: {fullDestFilePath}");
 					File.Copy(fullFilePath, fullDestFilePath);
 					++count;
 				}

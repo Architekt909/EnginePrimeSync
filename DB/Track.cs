@@ -6,9 +6,8 @@ using System.Threading.Tasks;
 
 namespace EnginePrimeSync.DB
 {
-	public class Track
+	public class Track : DbObject
 	{
-		public int Id { get; private set; }
 		public string Path { get; set; }
 		public string Filename { get; private set; }
 
@@ -45,7 +44,6 @@ namespace EnginePrimeSync.DB
 			}
 		}
 
-		public string Title { get; set; }
 		public string Artist { get; set; }
 		public string Album { get; set; }
 		public string Genre { get; set; }
@@ -57,9 +55,8 @@ namespace EnginePrimeSync.DB
 		public List<Cue> Cues { get; private set; } = new List<Cue>();
 		public List<Loop> Loops { get; private set; } = new List<Loop>();
 		
-		public Track(int id, string path, string fileName)
+		public Track(int id, string path, string fileName) : base(id)
 		{
-			Id = id;
 			Path = path;
 			Filename = fileName;
 		}

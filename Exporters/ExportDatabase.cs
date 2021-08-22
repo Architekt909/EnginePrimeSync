@@ -8,13 +8,14 @@ using EnginePrimeSync.DB;
 
 namespace EnginePrimeSync.Exporters
 {
-	public class ExportDatabase : ExporterBase
+	public class ExportDatabase : ExporterBase<Track>
 	{
-		
+		private readonly TrackManager _trackManager;
 		
 		public ExportDatabase()
 		{
-
+			_objectManager = new TrackManager();
+			_trackManager = _objectManager as TrackManager;
 		}
 
 		private bool ParseDatabases(string folder)
@@ -262,7 +263,7 @@ namespace EnginePrimeSync.Exporters
 		private List<string> CopyMusicToDestDrive(string destLibraryPath, string sourceLibraryPath)
 		{
 			Console.ForegroundColor = ConsoleColor.Magenta;
-			Console.WriteLine($"Copying {_trackManager.NumTracks()} tracks to {destLibraryPath}");
+			Console.WriteLine($"Copying {_trackManager.Count()} tracks to {destLibraryPath}");
 			Console.ForegroundColor = ConsoleColor.White;
 
 			var oldPrefixes = _trackManager.CopyMusicFiles(destLibraryPath, sourceLibraryPath);
@@ -275,6 +276,52 @@ namespace EnginePrimeSync.Exporters
 			return oldPrefixes;
 		}
 
-		
+		// Just the top level folder with trailing slash
+		protected virtual bool ParseMainDatabase(string folder)
+		{
+			try
+			{
+				_mainDb = new MainDb(folder);
+				_mainDb.OpenDb();
+				_mainDb.ReadTrackInfo(_trackManager);
+				_mainDb.CloseDb();
+			}
+			catch (Exception e)
+			{
+				Console.ForegroundColor = ConsoleColor.Red;
+				Console.WriteLine($"There was an error opening and/or parsing {_mainDb.GetDbPath()}.");
+				Console.WriteLine("Please check that the following exists and isn't locked:");
+				Console.WriteLine(_mainDb.GetDbPath());
+				Console.ForegroundColor = ConsoleColor.White;
+
+				return false;
+			}
+
+			return true;
+		}
+
+		// Just the top level folder with trailing slash
+		protected virtual bool ParsePerformanceDatabase(string folder)
+		{
+			try
+			{
+				_perfDb = new PerformanceDb(folder);
+				_perfDb.OpenDb();
+				_perfDb.ReadPerformanceInfo(_trackManager);
+				_perfDb.CloseDb();
+			}
+			catch (Exception e)
+			{
+				Console.ForegroundColor = ConsoleColor.Red;
+				Console.WriteLine($"There was an error opening and/or parsing {_perfDb.GetDbPath()}.");
+				Console.WriteLine("Please check that the following exists and isn't locked:");
+				Console.WriteLine(_perfDb.GetDbPath());
+				Console.ForegroundColor = ConsoleColor.White;
+
+				return false;
+			}
+
+			return true;
+		}
 	}
 }

@@ -28,7 +28,7 @@ namespace EnginePrimeSync.DB
 		// Assumes trackManager has already been populated by the main db
 		public bool ReadPerformanceInfo(TrackManager trackManager)
 		{
-			if (trackManager.NumTracks() == 0)
+			if (trackManager.Count() == 0)
 				return false;
 
 			using var command = _connection.CreateCommand();
@@ -40,7 +40,7 @@ namespace EnginePrimeSync.DB
 				while (reader.Read())
 				{
 					int id = reader.GetInt32(0);
-					Track t = trackManager.GetTrack(id);
+					Track t = trackManager.GetById(id);
 					if (t == null)
 						return false;   //shouldn't happen
 

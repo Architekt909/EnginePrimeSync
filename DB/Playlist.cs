@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace EnginePrimeSync.DB
 {
-	public class Playlist
+	public class Playlist : DbObject
 	{
 		public class TrackListItem
 		{
@@ -23,17 +23,13 @@ namespace EnginePrimeSync.DB
 				TrackOrder = trackOrder;
 			}
 		}
-
-		public int Id { get; }
-		public string Title { get; }
-
+		
 		// Sorted by track order
-		public List<TrackListItem> Tracks { get; } = new List<TrackListItem>();
+		public List<TrackListItem> Tracks { get; } = new();
 
-		public Playlist(int id, string title)
+		public Playlist(int id, string title) : base(id)
 		{
-			Id = id;
-			Title = title;
+			Name = title;
 		}
 
 		public void AddTrack(int trackId, int trackIdInOriginDb, string databaseUuid, int trackOrder)

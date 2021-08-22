@@ -51,7 +51,8 @@ namespace EnginePrimeSync
 		
 		private static void ImportExportCrates()
 		{
-
+			var exporter = new ExportCrates();
+			exporter.Run();
 		}
 	}
 }
