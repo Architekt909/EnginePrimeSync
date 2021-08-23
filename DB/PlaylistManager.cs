@@ -8,6 +8,9 @@ namespace EnginePrimeSync.DB
 {
 	public class PlaylistManager : DbObjectManager<Playlist>
 	{
-
+		public PlaylistManager()
+		{
+			_idToObjectMap = new Dictionary<int, Playlist>();
+		}
 	}
 }

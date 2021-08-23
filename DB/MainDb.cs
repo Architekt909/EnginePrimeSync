@@ -331,15 +331,16 @@ namespace EnginePrimeSync.DB
 			return true;
 		}
 
-		public bool RemapTrackTablePathColumn(string searchPrefix, string replacementPrefix)
+		public bool DeleteCopiedTrackTable()
 		{
+			// This table records whether tracks have been exported to an external drive. It's what sets the "packed" value. It also causes
+			// problems with 3rd party exporting apps, and is also not needed if you aren't using Engine Prime to handle syncing. This just
+			// simply tells Engine Prime whether or not it needs to copy tracks over to the external drive, but our app handles that already.
+
 			try
 			{
-				//NOTE: DO NOT PUT QUOTES OR SINGLE QUOTES AROUND THE PATH PARAMETERS EVEN IF THEY CONTAIN SPACES, OTHERWISE THE UPDATE METHOD WON'T WORK BUT WON'T THROW AN ERROR EITHER.
 				using var command = _connection.CreateCommand();
-				command.CommandText = @"UPDATE Track SET path = REPLACE(path, $oldP, $newP)";
-				command.Parameters.AddWithValue("$oldP", searchPrefix);
-				command.Parameters.AddWithValue("$newP", replacementPrefix);
+				command.CommandText = @"DELETE FROM CopiedTrack WHERE trackId >= 0";
 				command.ExecuteNonQuery();
 			}
 			catch (Exception e)
@@ -350,17 +351,63 @@ namespace EnginePrimeSync.DB
 			return true;
 		}
 
-		public bool RemapTrackTablePathColumnForSingleId(int trackId, string searchPrefix, string replacementPrefix)
+		public bool RemapTrackTablePathColumn(string searchPrefix, string replacementPrefix)
 		{
 			try
 			{
+
+
 				//NOTE: DO NOT PUT QUOTES OR SINGLE QUOTES AROUND THE PATH PARAMETERS EVEN IF THEY CONTAIN SPACES, OTHERWISE THE UPDATE METHOD WON'T WORK BUT WON'T THROW AN ERROR EITHER.
 				using var command = _connection.CreateCommand();
-				command.CommandText = @"UPDATE Track SET path = REPLACE(path, $oldP, $newP) WHERE id = $id";
-				command.Parameters.AddWithValue("$id", trackId);
-				command.Parameters.AddWithValue("$oldP", searchPrefix);
+				// The below won't work if the search string appears in multiple places, such as not just the start
+				//command.CommandText = @"UPDATE Track SET path = REPLACE(path, $oldP, $newP)";
+				command.CommandText = @"UPDATE Track SET path = $newP || SUBSTR(path, $oldPLength)";
 				command.Parameters.AddWithValue("$newP", replacementPrefix);
+				command.Parameters.AddWithValue("$oldPLength", searchPrefix.Length + 1);
 				command.ExecuteNonQuery();
+			}
+			catch (Exception e)
+			{
+				return false;
+			}
+
+			return true;
+		}
+
+		public bool RemapTrackTablePathColumnForIds(Dictionary<int, string> trackIdToNewPathMap, string searchPrefix)
+		{
+			int count = 1;
+			try
+			{
+				using var transaction = _connection.BeginTransaction();
+				using var command = _connection.CreateCommand();
+
+				command.CommandText = @"UPDATE Track SET path = $newP || SUBSTR(path, $oldPLength) WHERE id = $id";
+
+				var paramNewP = command.CreateParameter();
+				paramNewP.ParameterName = "$newP";
+				command.Parameters.Add(paramNewP);
+
+				var paramOldPLength = command.CreateParameter();
+				paramOldPLength.ParameterName = "$oldPLength";
+				command.Parameters.Add(paramOldPLength);
+
+				var paramId = command.CreateParameter();
+				paramId.ParameterName = "$id";
+				command.Parameters.Add(paramId);
+
+				foreach (var (key, value) in trackIdToNewPathMap)
+				{
+					Console.WriteLine($"Updating track {count}/{trackIdToNewPathMap.Count}");
+					++count;
+
+					paramNewP.Value = value;
+					paramOldPLength.Value = searchPrefix.Length + 1;
+					paramId.Value = key;
+					command.ExecuteNonQuery();
+				}
+
+				transaction.Commit();
 			}
 			catch (Exception e)
 			{

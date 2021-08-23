@@ -36,8 +36,7 @@ namespace EnginePrimeSync.Exporters
 
 		protected virtual void ImportExportObjects(bool export)
 		{
-			// This just verifies the local dbs exist, we dont need the return result
-			_ = GetLocalMusicLibraryPath();
+			var localLibraryPath = GetLocalMusicLibraryPath();
 			var externalDrive = GetDriveLetter(export);
 
 
@@ -62,15 +61,29 @@ namespace EnginePrimeSync.Exporters
 			}
 
 			using var externalMainDb = new MainDb(externalLibraryRoot);
+			MainDb destinationDb;
+			MainDb sourceDb;
 
-			var destinationDb = export ? externalMainDb : _mainDb;
-			var sourceDb = export ? _mainDb : externalMainDb;
+			if (export)
+			{
+				destinationDb = externalMainDb;
+				sourceDb = _mainDb = new MainDb(localLibraryPath);
+			}
+			else
+			{
+				sourceDb = externalMainDb;
+				destinationDb = _mainDb = new MainDb(localLibraryPath);
+			}
+
 			sourceDb.OpenDb();
 			if (!ReadSourceContent(sourceDb))
 			{
+				sourceDb.CloseDb();
 				Console.ForegroundColor = ConsoleColor.Red;
 				Console.WriteLine($"Error reading {_objectNamePlural} from source database. Press enter to return to main menu.");
 				Console.ForegroundColor = ConsoleColor.White;
+				Console.ReadLine();
+				return;
 			}
 			sourceDb.CloseDb();
 

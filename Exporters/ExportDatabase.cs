@@ -82,6 +82,21 @@ namespace EnginePrimeSync.Exporters
 			var destMainDb = musicPath + MainDb.DB_NAME;
 			var destPerfDb = musicPath + PerformanceDb.DB_NAME;
 
+			// clear the copied track info, if any exists, as it's problematic for 3rd party tools and also isn't necessary to Engine Prime.
+			// It simply dictates if EP should copy music files to an external drive or not and sets the "packed" flag in the UI.
+			var db = new MainDb(sourceFolder);
+			db.OpenDb();
+			if (!db.DeleteCopiedTrackTable())
+			{
+				db.CloseDb();
+				Console.ForegroundColor = ConsoleColor.Red;
+				Console.WriteLine("Error wiping the CopiedTrack table from source database \"m.db\". Suggest restoring source db.\nPress enter to return to main menu.");
+				Console.ReadLine();
+				return;
+			}
+
+			db.CloseDb();
+
 			try
 			{
 				File.Copy(sourceMainDb, destMainDb, true);
@@ -114,27 +129,28 @@ namespace EnginePrimeSync.Exporters
 				return;
 			}
 
-			var oldPrefixToNewPrefixMap = trackManager.RemapPrefixesForImporting(musicPath);
+			if (!mainDb.DeleteCopiedTrackTable())
+			{
+				Console.ForegroundColor = ConsoleColor.Red;
+				Console.WriteLine("There was an error trying to clear the CopiedTrack database table. Aborting.\nI'd advise restoring your destination database.\nPress enter to return to main menu.");
+				Console.ReadLine();
+				return;
+			}
+
+			var trackIdToNewPathMap = trackManager.RemapPrefixesForImporting(musicPath);
 
 			Console.ForegroundColor = ConsoleColor.Magenta;
-			Console.WriteLine($"Updating paths for {oldPrefixToNewPrefixMap.Count} tracks. This may take a while.");
+			Console.WriteLine($"Updating paths for {trackIdToNewPathMap.Count} tracks. This may take a while.");
 			Console.ForegroundColor = ConsoleColor.White;
 
-			int count = 1;
-			foreach (var kvp in oldPrefixToNewPrefixMap)
+			if (!mainDb.RemapTrackTablePathColumnForIds(trackIdToNewPathMap, EnginePrimeDb.EXTERNAL_MUSIC_FOLDER))
 			{
-				Console.WriteLine($"Updating track {count}/{oldPrefixToNewPrefixMap.Count}");
-				++count;
-				
-				if (!mainDb.RemapTrackTablePathColumnForSingleId(kvp.Key, EnginePrimeDb.EXTERNAL_MUSIC_FOLDER, kvp.Value))
-				{
-					Console.ForegroundColor = ConsoleColor.Red;
-					Console.WriteLine($"There was an error remapping paths for database:\n{mainDb.GetDbPath()}\nOld prefix: {kvp.Key}\nNew prefix: {kvp.Value}\nPress enter to return to main menu.");
-					Console.ForegroundColor = ConsoleColor.White;
-					mainDb.CloseDb();
-					Console.ReadLine();
-					return;
-				}
+				Console.ForegroundColor = ConsoleColor.Red;
+				Console.WriteLine($"There was an error remapping paths for database:\n{mainDb.GetDbPath()}\nPress enter to return to main menu.");
+				Console.ForegroundColor = ConsoleColor.White;
+				mainDb.CloseDb();
+				Console.ReadLine();
+				return;
 			}
 
 			mainDb.CloseDb();
@@ -191,9 +207,9 @@ namespace EnginePrimeSync.Exporters
 			if (!Directory.Exists(destLibraryPath + EnginePrimeDb.EXTERNAL_MUSIC_FOLDER))
 				Directory.CreateDirectory(destLibraryPath + EnginePrimeDb.EXTERNAL_MUSIC_FOLDER);
 
-			List<string> oldPrefixes = CopyMusicToDestDrive(destLibraryPath + EnginePrimeDb.EXTERNAL_MUSIC_FOLDER, musicPath);
+			var oldPrefixForTrackIdsMap = CopyMusicToDestDrive(destLibraryPath + EnginePrimeDb.EXTERNAL_MUSIC_FOLDER, musicPath);
 
-			if (oldPrefixes == null)
+			if (oldPrefixForTrackIdsMap == null)
 			{
 				try
 				{
@@ -227,11 +243,31 @@ namespace EnginePrimeSync.Exporters
 				return;
 			}
 
-			if (RemapDestinationDatabasePaths(oldPrefixes, destLibraryPath))
+			var destDb = new MainDb(destLibraryPath);
+			destDb.OpenDb();
+
+			foreach (var (oldPrefix, ids) in oldPrefixForTrackIdsMap)
 			{
-				Console.ForegroundColor = ConsoleColor.Green;
-				Console.WriteLine("\n\nEXPORT COMPLETE.");
+				var trackIdToNewPathMap = new Dictionary<int, string>();
+
+				foreach (var id in ids)
+					trackIdToNewPathMap[id] = EnginePrimeDb.EXTERNAL_MUSIC_FOLDER;
+
+				if (!destDb.RemapTrackTablePathColumnForIds(trackIdToNewPathMap, oldPrefix))
+				{
+					Console.ForegroundColor = ConsoleColor.Red;
+					Console.WriteLine($"There was an error remapping paths for database:\n{destDb.GetDbPath()}\nPress enter to return to main menu.");
+					Console.ForegroundColor = ConsoleColor.White;
+					destDb.CloseDb();
+					Console.ReadLine();
+					return;
+				}
 			}
+
+			Console.ForegroundColor = ConsoleColor.Green;
+			Console.WriteLine("\n\nEXPORT COMPLETE.");
+
+			destDb.CloseDb();
 
 			Console.WriteLine("PRESS ENTER TO RETURN TO MENU.");
 			Console.ReadLine();
@@ -239,41 +275,16 @@ namespace EnginePrimeSync.Exporters
 
 		}
 
-		private bool RemapDestinationDatabasePaths(List<string> oldPrefixes, string destLibraryPath)
-		{
-			using var destDb = new MainDb(destLibraryPath);
-			destDb.OpenDb();
 
-			foreach (var oldPrefix in oldPrefixes)
-			{
-				if (!destDb.RemapTrackTablePathColumn(oldPrefix, EnginePrimeDb.EXTERNAL_MUSIC_FOLDER))
-				{
-					Console.ForegroundColor = ConsoleColor.Red;
-					Console.WriteLine($"There was an error remapping paths for database:\n{destDb.GetDbPath()}\nOld prefix: {oldPrefix}\nNew prefix: {EnginePrimeDb.EXTERNAL_MUSIC_FOLDER}\n");
-					Console.ForegroundColor = ConsoleColor.White;
-					destDb.CloseDb();
-					return false;
-				}
-			}
-
-			destDb.CloseDb();
-			return true;
-		}
-
-		private List<string> CopyMusicToDestDrive(string destLibraryPath, string sourceLibraryPath)
+		private Dictionary<string, List<int>> CopyMusicToDestDrive(string destLibraryPath, string sourceLibraryPath)
 		{
 			Console.ForegroundColor = ConsoleColor.Magenta;
 			Console.WriteLine($"Copying {_trackManager.Count()} tracks to {destLibraryPath}");
 			Console.ForegroundColor = ConsoleColor.White;
 
-			var oldPrefixes = _trackManager.CopyMusicFiles(destLibraryPath, sourceLibraryPath);
-			if (oldPrefixes == null)
-			{
-				// An error ocurred
-				return null;
-			}
+			var oldPrefixForTrackIdsMap = _trackManager.CopyMusicFiles(destLibraryPath, sourceLibraryPath);
 
-			return oldPrefixes;
+			return oldPrefixForTrackIdsMap;
 		}
 
 		// Just the top level folder with trailing slash
@@ -283,7 +294,12 @@ namespace EnginePrimeSync.Exporters
 			{
 				_mainDb = new MainDb(folder);
 				_mainDb.OpenDb();
-				_mainDb.ReadTrackInfo(_trackManager);
+				if (!_mainDb.ReadTrackInfo(_trackManager))
+					throw new Exception();
+
+				if (!_mainDb.DeleteCopiedTrackTable())
+					throw new Exception();
+
 				_mainDb.CloseDb();
 			}
 			catch (Exception e)

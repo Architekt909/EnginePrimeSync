@@ -1,15 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace EnginePrimeSync.DB
 {
 	
 	public class TrackManager : DbObjectManager<Track>
 	{
+		public TrackManager()
+		{
+			_idToObjectMap = new Dictionary<int, Track>();
+		}
+
 		// Doesn't copy any files. Returns map of track ID to new path string that should be set. Should include trailing slash
 		public Dictionary<int, string> RemapPrefixesForImporting(string destLibraryFolder)
 		{
@@ -33,7 +35,9 @@ namespace EnginePrimeSync.DB
 					var newFullFilePath = destLibraryFolder + newPrefix + track.Path.Substring(oldPrefix.Length);
 					if (!File.Exists(newFullFilePath))
 					{
-						Console.ForegroundColor = ConsoleColor.Red;
+						Console.ForegroundColor = ConsoleColor.Yellow;
+						Console.WriteLine($"\nRemapping source file: {track.Path}");
+						Console.ForegroundColor = ConsoleColor.Magenta;
 						Console.WriteLine($"Couldn't find file at destination: {newFullFilePath}");
 						Console.WriteLine("You will be prompted to try again to fix any prefix problems. Nothing has been modified at this point.");
 						Console.ForegroundColor = ConsoleColor.White;
@@ -52,11 +56,15 @@ namespace EnginePrimeSync.DB
 			return trackIdToNewPathMap;
 		}
 
-		// Returns a list of prefixes to strip out of the source database and replace with the standard destination drive music folder
-		// destFolder should NOT contain trailing slash, while sourceLibraryPath SHOULD contain trailing slash
-		public List<string> CopyMusicFiles(string destFolder, string sourceLibraryPath)
+		/*
+			Returns a dictionary where the key is the old prefix to strip out and the value is a list of IDs this applies to
+			destFolder should NOT contain trailing slash, while sourceLibraryPath SHOULD contain trailing slash
+		 */
+		public Dictionary<string, List<int>> CopyMusicFiles(string destFolder, string sourceLibraryPath)
 		{
+			var oldPrefixForTrackIdsMap = new Dictionary<string, List<int>>();
 			var oldPrefixes = new List<string>();
+
 			int count = 1;
 
 			foreach (var kvp in _idToObjectMap)
@@ -64,14 +72,14 @@ namespace EnginePrimeSync.DB
 				var track = kvp.Value;
 
 				string fullFilePath = sourceLibraryPath + track.Path;
-				string prefix = null;
+				string oldPrefix = null;
 
 				bool foundPrefix = false;
-				foreach (var oldPrefix in oldPrefixes)
+				foreach (var old in oldPrefixes)
 				{
-					if (track.Path.IndexOf(oldPrefix) == 0)
+					if (track.Path.IndexOf(old) == 0)
 					{
-						prefix = oldPrefix;
+						oldPrefix = old;
 						foundPrefix = true;
 						break;
 					}
@@ -79,11 +87,22 @@ namespace EnginePrimeSync.DB
 
 				if (!foundPrefix)
 				{
-					_ = RemapPrefixes(track, true, ref prefix);
-					oldPrefixes.Add(prefix);
+					_ = RemapPrefixes(track, true, ref oldPrefix);
+					oldPrefixes.Add(oldPrefix);
 				}
-				
-				var strippedPath = track.Path.Substring(prefix.Length + 1); // +1 to remove trailing slash. This now just contains the folder the file is in without the root.
+
+				List<int> ids;
+				if (oldPrefixForTrackIdsMap.ContainsKey(oldPrefix))
+					ids = oldPrefixForTrackIdsMap[oldPrefix];
+				else
+				{
+					ids = new List<int>();
+					oldPrefixForTrackIdsMap[oldPrefix] = ids;
+				}
+
+				ids.Add(track.Id);
+
+				var strippedPath = track.Path.Substring(oldPrefix.Length + 1); // +1 to remove trailing slash. This now just contains the folder the file is in without the root.
 				var lastSlash = strippedPath.LastIndexOf('/');
 				var trackDir = strippedPath.Substring(0, lastSlash);
 
@@ -117,10 +136,9 @@ namespace EnginePrimeSync.DB
 					Console.ForegroundColor = ConsoleColor.White;
 					return null;
 				}
-
 			}
 
-			return oldPrefixes;
+			return oldPrefixForTrackIdsMap;
 		}
 
 		// New prefix is returned.
@@ -153,6 +171,8 @@ namespace EnginePrimeSync.DB
 					Console.WriteLine(@"toplevel folder containing your music is D:\Music\Archived Vinyl\ you would want to enter:");
 					Console.ForegroundColor = ConsoleColor.Yellow;
 					Console.WriteLine(@"../ArchivedVinyl (DO NOT INCLUDE TRAILING SLASH, and yes, you need to use / not \\)");
+					Console.ForegroundColor = ConsoleColor.Magenta;
+					Console.WriteLine($"The current track is: {track.Path}");
 					Console.ForegroundColor = ConsoleColor.White;
 					newPrefix = Console.ReadLine();
 					if (newPrefix == null)
