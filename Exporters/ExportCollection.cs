@@ -104,7 +104,7 @@ namespace EnginePrimeSync.Exporters
 				return;
 			}
 
-			if (!WriteContent(destinationDb))
+			if (!WriteContent(sourceDb, destinationDb))
 			{
 				Console.WriteLine("Press enter to return to main menu.");
 				Console.ForegroundColor = ConsoleColor.White;
@@ -120,7 +120,7 @@ namespace EnginePrimeSync.Exporters
 		}
 
 		protected abstract bool DeleteContent(MainDb destinationDb);
-		protected abstract bool WriteContent(MainDb destinationDb);
+		protected abstract bool WriteContent(MainDb sourceDb, MainDb destinationDb);
 		protected abstract bool ReadSourceContent(MainDb sourceDb);
 	}
 }

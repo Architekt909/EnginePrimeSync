@@ -119,7 +119,7 @@ namespace EnginePrimeSync.DB
 				return false;
 			}
 
-			return false;
+			return true;
 		}
 
 		private bool ParseCrateTrackListTable(CrateManager crateManager)
@@ -149,6 +149,60 @@ namespace EnginePrimeSync.DB
 			return true;
 		}
 
+		//destDb must NOT be open! This just does a wholesale copy of each table from the source to the destination as
+		//doing it via other methods is actually slower and more error prone.
+		public bool WriteCrates(MainDb destDb)
+		{
+			var views = new[] { "Crate", "CrateHierarchy", "CrateParentList", "CrateTrackList" };
+
+			try
+			{
+				using var attachCommand = _connection.CreateCommand();
+				attachCommand.CommandText = $"ATTACH DATABASE '{destDb.GetDbPath()}' AS dest";
+				attachCommand.ExecuteNonQuery();
+			}
+			catch (Exception e)
+			{
+				Console.ForegroundColor = ConsoleColor.Red;
+				Console.WriteLine("Error copying crates.");
+				Console.ForegroundColor = ConsoleColor.White;
+				return false;
+			}
+
+			foreach (var view in views)
+			{
+				try
+				{
+					using var insertCommand = _connection.CreateCommand();
+					insertCommand.CommandText = $"INSERT INTO dest.{view} SELECT * FROM {view}";
+					insertCommand.ExecuteNonQuery();
+				}
+				catch (Exception e)
+				{
+					Console.ForegroundColor = ConsoleColor.Red;
+					Console.WriteLine($"Error copying DB table: {view} from source to destination.");
+					Console.ForegroundColor = ConsoleColor.White;
+					return false;
+				}
+			}
+
+			try
+			{
+				using var detachCommand = _connection.CreateCommand();
+				detachCommand.CommandText = "DETACH DATABASE dest";
+				detachCommand.ExecuteNonQuery();
+			}
+			catch (Exception e)
+			{
+				Console.ForegroundColor = ConsoleColor.Red;
+				Console.WriteLine("Error copying crates.");
+				Console.ForegroundColor = ConsoleColor.White;
+				return false;
+			}
+
+			return true;
+
+		}
 		public bool DeletePlaylists()
 		{
 			try
@@ -341,29 +395,6 @@ namespace EnginePrimeSync.DB
 			{
 				using var command = _connection.CreateCommand();
 				command.CommandText = @"DELETE FROM CopiedTrack WHERE trackId >= 0";
-				command.ExecuteNonQuery();
-			}
-			catch (Exception e)
-			{
-				return false;
-			}
-
-			return true;
-		}
-
-		public bool RemapTrackTablePathColumn(string searchPrefix, string replacementPrefix)
-		{
-			try
-			{
-
-
-				//NOTE: DO NOT PUT QUOTES OR SINGLE QUOTES AROUND THE PATH PARAMETERS EVEN IF THEY CONTAIN SPACES, OTHERWISE THE UPDATE METHOD WON'T WORK BUT WON'T THROW AN ERROR EITHER.
-				using var command = _connection.CreateCommand();
-				// The below won't work if the search string appears in multiple places, such as not just the start
-				//command.CommandText = @"UPDATE Track SET path = REPLACE(path, $oldP, $newP)";
-				command.CommandText = @"UPDATE Track SET path = $newP || SUBSTR(path, $oldPLength)";
-				command.Parameters.AddWithValue("$newP", replacementPrefix);
-				command.Parameters.AddWithValue("$oldPLength", searchPrefix.Length + 1);
 				command.ExecuteNonQuery();
 			}
 			catch (Exception e)

@@ -16,12 +16,16 @@ namespace EnginePrimeSync.Exporters
 		}
 
 		protected override bool DeleteContent(MainDb destinationDb) => destinationDb.DeleteCrates();
-		
-		protected override bool WriteContent(MainDb destinationDb)
-		{
-			return false;
-		}
 
+		protected override bool WriteContent(MainDb sourceDb, MainDb destinationDb)
+		{
+			sourceDb.OpenDb();
+			var result = sourceDb.WriteCrates(destinationDb);
+			sourceDb.CloseDb();
+
+			return result;
+		}
+		
 		protected override bool ReadSourceContent(MainDb sourceDb) => sourceDb.ReadCrates(_crateManager);
 		
 	}

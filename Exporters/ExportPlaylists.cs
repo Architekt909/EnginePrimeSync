@@ -18,6 +18,6 @@ namespace EnginePrimeSync.Exporters
 
 		protected override bool ReadSourceContent(MainDb sourceDb) => sourceDb.ReadPlaylists(_playlistManager);
 		protected override bool DeleteContent(MainDb destDb) => destDb.DeletePlaylists();
-		protected override bool WriteContent(MainDb destDb) => destDb.WritePlaylists(_playlistManager);
+		protected override bool WriteContent(MainDb sourceDb, MainDb destDb) => destDb.WritePlaylists(_playlistManager);
 	}
 }

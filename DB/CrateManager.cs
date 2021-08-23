@@ -18,6 +18,7 @@ namespace EnginePrimeSync.DB
 				crate.TopLevelParentId = RecursivelyFindParentId(crate);
 			}
 		}
+		
 
 		private int RecursivelyFindParentId(Crate c)
 		{

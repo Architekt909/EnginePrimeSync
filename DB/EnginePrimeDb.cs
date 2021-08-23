@@ -1,9 +1,5 @@
 ﻿using Microsoft.Data.Sqlite;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace EnginePrimeSync.DB
 {
@@ -12,6 +8,7 @@ namespace EnginePrimeSync.DB
 		protected readonly string _dbPath;
 		protected SqliteConnection _connection;
 		protected bool _disposed;
+		protected bool _opened;
 
 		public const string EXTERNAL_MUSIC_FOLDER = @"Music";
 		public const string ENGINE_FOLDER = @"Engine Library";
@@ -26,6 +23,9 @@ namespace EnginePrimeSync.DB
 
 		public void OpenDb()
 		{
+			if (_opened)
+				return;
+
 			var connectionString = new SqliteConnectionStringBuilder()
 			{
 				Mode = SqliteOpenMode.ReadWrite,
@@ -34,9 +34,14 @@ namespace EnginePrimeSync.DB
 
 			_connection = new SqliteConnection(connectionString);
 			_connection.Open();
+			_opened = true;
 		}
 
-		public void CloseDb() => _connection?.Close();
+		public void CloseDb()
+		{
+			_connection?.Close();
+			_opened = false;
+		} 
 
 		protected virtual void Dispose(bool disposing)
 		{
