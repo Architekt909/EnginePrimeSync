@@ -13,12 +13,12 @@ namespace EnginePrimeSync.DB
 		}
 
 		// Doesn't copy any files. Returns map of track ID to new path string that should be set. Should include trailing slash
-		public Dictionary<int, string> RemapPrefixesForImporting(string destLibraryFolder)
+		public Dictionary<int, string> RemapPrefixesForImportingOrFixing(string destLibraryFolder, bool fixing, Dictionary<int, string> trackIdToOldPathMap = null)
 		{
 			var trackIdToNewPathMap = new Dictionary<int, string>();
 
 			bool requireRemap = true;
-			string oldPrefix = EnginePrimeDb.EXTERNAL_MUSIC_FOLDER;
+			string oldPrefix = fixing ? null : EnginePrimeDb.EXTERNAL_MUSIC_FOLDER;
 			string newPrefix = null;
 
 			foreach (var kvp in _idToObjectMap)
@@ -49,6 +49,8 @@ namespace EnginePrimeSync.DB
 						done = true;
 
 						trackIdToNewPathMap[track.Id] = newPrefix;
+						if (fixing && (trackIdToOldPathMap != null))
+							trackIdToOldPathMap[track.Id] = oldPrefix;
 					}
 				}
 			}
@@ -149,7 +151,7 @@ namespace EnginePrimeSync.DB
 
 			while (!done)
 			{
-				if (exporting)
+				if (exporting || (oldPrefix == null))
 				{
 					Console.ForegroundColor = ConsoleColor.Cyan;
 					Console.WriteLine("Please enter the prefix you wish to replace from the string below (DON'T include trailing slash): ");
@@ -189,6 +191,7 @@ namespace EnginePrimeSync.DB
 					Console.WriteLine($"The path we need to remap: {track.Path}");
 					Console.WriteLine($"Does not start with: {oldPrefix}");
 					Console.ForegroundColor = ConsoleColor.White;
+					oldPrefix = null;
 				}
 				else
 				{
@@ -200,13 +203,13 @@ namespace EnginePrimeSync.DB
 					}
 					
 
-					Console.Write("The path from the source database: ");
+					Console.Write("This path: ");
 					Console.ForegroundColor = ConsoleColor.Magenta;
 					Console.WriteLine(track.Path);
 					Console.ForegroundColor = ConsoleColor.Cyan;
 					Console.Write("Will be remapped to: ");
 					Console.ForegroundColor = ConsoleColor.Yellow;
-					Console.WriteLine($"{newPath} in the destination database.");
+					Console.WriteLine($"{newPath}");
 					Console.ForegroundColor = ConsoleColor.White;
 					Console.WriteLine("Is this OK? Enter 'n' to redo prefix mapping.");
 					Console.Write("[y/N]: ");

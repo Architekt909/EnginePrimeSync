@@ -12,9 +12,11 @@ namespace EnginePrimeSync.Exporters
 		
 		public abstract void Run();
 
+		public static string GetDefaultMusicLibraryPath() => Environment.GetFolderPath(Environment.SpecialFolder.MyMusic) + $"\\{EnginePrimeDb.ENGINE_FOLDER_SLASH}";
+
 		protected string GetLocalMusicLibraryPath()
 		{
-			var musicPath = Environment.GetFolderPath(Environment.SpecialFolder.MyMusic) + $"\\{EnginePrimeDb.ENGINE_FOLDER_SLASH}";
+			var musicPath = GetDefaultMusicLibraryPath();
 			bool useDefault = true;
 
 			if (File.Exists(musicPath + MainDb.DB_NAME) && File.Exists(musicPath + PerformanceDb.DB_NAME))

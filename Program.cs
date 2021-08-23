@@ -18,7 +18,9 @@ namespace EnginePrimeSync
 				Console.WriteLine("1. Import/Export entire database");
 				Console.WriteLine("2. Import/Export playlists");
 				Console.WriteLine("3. Import/Export crates");
-				Console.WriteLine("4. Exit (or just press enter or anything invalid)\n");
+				Console.WriteLine("4. Import/Export metadata (cues/loops/waveforms/etc)");
+				Console.WriteLine("5. Fix file paths");
+				Console.WriteLine("6. Exit (or just press enter or anything invalid)\n");
 				Console.WriteLine("Choice: ");
 				var str = Console.ReadLine();
 				if (string.IsNullOrEmpty(str))
@@ -33,6 +35,9 @@ namespace EnginePrimeSync
 					ImportExportPlaylists();
 				else if (choice == 3)
 					ImportExportCrates();
+				else if (choice == 5)
+					FixPaths();
+
 			}
 			while (choice is >= 1 and <= 3);
 		}
@@ -52,6 +57,12 @@ namespace EnginePrimeSync
 		private static void ImportExportCrates()
 		{
 			var exporter = new ExportCrates();
+			exporter.Run();
+		}
+
+		private static void FixPaths()
+		{
+			var exporter = new ExportFixedPaths();
 			exporter.Run();
 		}
 	}

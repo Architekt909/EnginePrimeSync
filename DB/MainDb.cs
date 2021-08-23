@@ -407,6 +407,15 @@ namespace EnginePrimeSync.DB
 
 		public bool RemapTrackTablePathColumnForIds(Dictionary<int, string> trackIdToNewPathMap, string searchPrefix)
 		{
+			var trackIdToOldPathMap = new Dictionary<int, string>();
+			foreach (var id in trackIdToNewPathMap.Keys)
+				trackIdToOldPathMap[id] = searchPrefix;
+
+			return RemapTrackTablePathColumnForIds(trackIdToNewPathMap, trackIdToOldPathMap);
+		}
+
+		public bool RemapTrackTablePathColumnForIds(Dictionary<int, string> trackIdToNewPathMap, Dictionary<int, string> trackIdToOldPathMap)
+		{
 			int count = 1;
 			try
 			{
@@ -433,7 +442,7 @@ namespace EnginePrimeSync.DB
 					++count;
 
 					paramNewP.Value = value;
-					paramOldPLength.Value = searchPrefix.Length + 1;
+					paramOldPLength.Value = trackIdToOldPathMap[key].Length + 1;
 					paramId.Value = key;
 					command.ExecuteNonQuery();
 				}

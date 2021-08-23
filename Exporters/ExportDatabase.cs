@@ -137,7 +137,7 @@ namespace EnginePrimeSync.Exporters
 				return;
 			}
 
-			var trackIdToNewPathMap = trackManager.RemapPrefixesForImporting(musicPath);
+			var trackIdToNewPathMap = trackManager.RemapPrefixesForImportingOrFixing(musicPath, false);
 
 			Console.ForegroundColor = ConsoleColor.Magenta;
 			Console.WriteLine($"Updating paths for {trackIdToNewPathMap.Count} tracks. This may take a while.");
