@@ -1,14 +1,6 @@
 ﻿using Microsoft.Data.Sqlite;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.IO.Compression;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Linq;
-
-
 
 namespace EnginePrimeSync.DB
 {
@@ -60,6 +52,92 @@ namespace EnginePrimeSync.DB
 			}
 			catch (Exception e)
 			{
+				return false;
+			}
+
+			return true;
+		}
+
+		//destDb must NOT be open!
+		public bool CopyMetadataToOtherDb(PerformanceDb destDb, bool copyEverything, bool copyCues = false, bool copyLoops = false)
+		{
+
+			try
+			{
+				using var attachCommand = _connection.CreateCommand();
+				attachCommand.CommandText = $"ATTACH DATABASE '{destDb.GetDbPath()}' AS dest";
+				attachCommand.ExecuteNonQuery();
+			}
+			catch (Exception e)
+			{
+				Console.ForegroundColor = ConsoleColor.Red;
+				Console.WriteLine($"Error attaching destination dabase: {destDb.GetDbPath()}.");
+				Console.ForegroundColor = ConsoleColor.White;
+				return false;
+			}
+
+			try
+			{
+				using var updateCommand = _connection.CreateCommand();
+				if (copyEverything)
+				{
+					var columns = new[] { "isAnalyzed", "isRendered", "trackData", "highResolutionWaveFormData", "overviewWaveFormData", "beatData", "quickCues", "loops", "hasSeratoValues", "hasRekordboxValues", "hasTraktorValues" };
+					updateCommand.CommandText = @"UPDATE dest.PerformanceData ";
+					for (int i = 0; i < columns.Length; i++)
+					{
+						if (i == 0)
+							updateCommand.CommandText += "SET ";
+
+						var col = columns[i];
+						updateCommand.CommandText += $"{col}=(SELECT {col} FROM PerformanceData WHERE dest.PerformanceData.id=PerformanceData.id)";
+
+						if (i < columns.Length - 1)
+							updateCommand.CommandText += ",";
+					}
+
+					updateCommand.CommandText += " WHERE EXISTS(SELECT 1 FROM dest.PerformanceData WHERE dest.PerformanceData.id=PerformanceData.id)";
+				}
+				else if (copyCues && copyLoops)
+				{
+					updateCommand.CommandText = @"UPDATE dest.PerformanceData 
+												SET quickCues=(SELECT quickCues FROM PerformanceData WHERE dest.PerformanceData.id=PerformanceData.id),
+													loops=(SELECT loops FROM PerformanceData WHERE dest.PerformanceData.id=PerformanceData.id)
+												WHERE EXISTS(SELECT 1 FROM dest.PerformanceData WHERE dest.PerformanceData.id=PerformanceData.id)";
+				}
+				else if (copyCues)
+				{
+					updateCommand.CommandText = @"UPDATE dest.PerformanceData 
+												SET quickCues=(SELECT quickCues FROM PerformanceData WHERE dest.PerformanceData.id=PerformanceData.id) 
+												WHERE EXISTS(SELECT 1 FROM dest.PerformanceData WHERE dest.PerformanceData.id=PerformanceData.id)";
+				}
+				else
+				{
+					updateCommand.CommandText = @"UPDATE dest.PerformanceData 
+												SET loops=(SELECT loops FROM PerformanceData WHERE dest.PerformanceData.id=PerformanceData.id) 
+												WHERE EXISTS(SELECT 1 FROM dest.PerformanceData WHERE dest.PerformanceData.id=PerformanceData.id)";
+				}
+
+				updateCommand.ExecuteNonQuery();
+			}
+			catch (Exception e)
+			{
+				Console.ForegroundColor = ConsoleColor.Red;
+				Console.WriteLine("Error copying metadata from source to destination.");
+				Console.ForegroundColor = ConsoleColor.White;
+				return false;
+			}
+
+			try
+			{
+				using var detachCommand = _connection.CreateCommand();
+				detachCommand.CommandText = "DETACH DATABASE dest";
+				detachCommand.ExecuteNonQuery();
+			}
+			catch (Exception e)
+			{
+				Console.ForegroundColor = ConsoleColor.Red;
+				Console.WriteLine("Error detaching destination database.");
+				Console.ForegroundColor = ConsoleColor.White;
 				return false;
 			}
 

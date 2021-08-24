@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace EnginePrimeSync.DB
 {
-	public class Cue
+	public class Cue : IEquatable<Cue>
 	{
 		public string Label { get; private set; }
 		public double PositionInSamples { get; private set; }
@@ -47,6 +47,36 @@ namespace EnginePrimeSync.DB
 			}
 
 			return false;
+		}
+
+		public override bool Equals(object obj)
+		{
+			return Equals(obj as Cue);
+		}
+
+		public bool Equals(Cue other)
+		{
+			return other != null &&
+				   Label == other.Label &&
+				   (Math.Abs(PositionInSamples - other.PositionInSamples) < 0.01) &&
+				   Red == other.Red &&
+				   Green == other.Green &&
+				   Blue == other.Blue;
+		}
+
+		public override int GetHashCode()
+		{
+			return HashCode.Combine(Label, PositionInSamples, Red, Green, Blue);
+		}
+
+		public static bool operator ==(Cue left, Cue right)
+		{
+			return EqualityComparer<Cue>.Default.Equals(left, right);
+		}
+
+		public static bool operator !=(Cue left, Cue right)
+		{
+			return !(left == right);
 		}
 	}
 }

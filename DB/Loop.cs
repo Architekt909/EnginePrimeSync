@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace EnginePrimeSync.DB
 {
-	public class Loop
+	public class Loop : IEquatable<Loop>
 	{
 		public string Label { get; private set; }
 		public double StartPositionInSamples { get; private set; }
@@ -58,6 +58,39 @@ namespace EnginePrimeSync.DB
 			}
 
 			return false;
+		}
+
+		public override bool Equals(object obj)
+		{
+			return Equals(obj as Loop);
+		}
+
+		public bool Equals(Loop other)
+		{
+			return other != null &&
+				   Label == other.Label &&
+				   (Math.Abs(StartPositionInSamples - other.StartPositionInSamples) < 0.01) &&
+				   (Math.Abs(EndPositionInSamples - other.EndPositionInSamples) < 0.01) &&
+				   StartPointSet == other.StartPointSet &&
+				   EndPointSet == other.EndPointSet &&
+				   Red == other.Red &&
+				   Green == other.Green &&
+				   Blue == other.Blue;
+		}
+
+		public override int GetHashCode()
+		{
+			return HashCode.Combine(Label, StartPositionInSamples, EndPositionInSamples, StartPointSet, EndPointSet, Red, Green, Blue);
+		}
+
+		public static bool operator ==(Loop left, Loop right)
+		{
+			return EqualityComparer<Loop>.Default.Equals(left, right);
+		}
+
+		public static bool operator !=(Loop left, Loop right)
+		{
+			return !(left == right);
 		}
 	}
 }

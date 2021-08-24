@@ -527,7 +527,5 @@ namespace EnginePrimeSync.DB
 
 			return true;
 		}
-
-		
 	}
 }

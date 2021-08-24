@@ -35,11 +35,12 @@ namespace EnginePrimeSync
 					ImportExportPlaylists();
 				else if (choice == 3)
 					ImportExportCrates();
+				else if (choice == 4)
+					ImportExportMetadata();
 				else if (choice == 5)
 					FixPaths();
-
 			}
-			while (choice is >= 1 and <= 3);
+			while (choice is >= 1 and <= 5);
 		}
 
 		private static void ImportExportEntireDatabase()
@@ -57,6 +58,12 @@ namespace EnginePrimeSync
 		private static void ImportExportCrates()
 		{
 			var exporter = new ExportCrates();
+			exporter.Run();
+		}
+
+		private static void ImportExportMetadata()
+		{
+			var exporter = new ExportMetadata();
 			exporter.Run();
 		}
 

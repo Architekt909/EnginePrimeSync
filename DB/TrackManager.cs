@@ -228,5 +228,20 @@ namespace EnginePrimeSync.DB
 
 			return newPrefix;
 		}
+
+		// Returns a list of IDs in the other manager that don't match the ones in this. If it's empty, all IDs match up.
+		public List<int> VerifyTrackIdsAreTheSame(TrackManager otherManager)
+		{
+			var nonMatchingIds = new List<int>();
+
+			foreach (var (id, track) in _idToObjectMap)
+			{
+				var otherTrack = otherManager.GetById(id);
+				if (!track.IsSameAsTrack(otherTrack))
+					nonMatchingIds.Add(id);
+			}
+
+			return nonMatchingIds;
+		}
 	}
 }

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace EnginePrimeSync.DB
 {
-	public class Track : DbObject
+	public class Track : DbObject, IEquatable<Track>
 	{
 		public string Path { get; set; }
 		public string Filename { get; private set; }
@@ -104,5 +104,72 @@ namespace EnginePrimeSync.DB
 			}
 		}
 
+		// Less strict than Equals. Used to just see if the tracks represent the same file
+		public bool IsSameAsTrack(Track t)
+		{
+			return t != null &&
+				   Id == t.Id &&
+				   Name == t.Name &&
+				   Filename == t.Filename &&
+				   Name == t.Name;
+		}
+
+		public override bool Equals(object obj)
+		{
+			return Equals(obj as Track);
+		}
+
+		public bool Equals(Track other)
+		{
+			return other != null &&
+				   Id == other.Id &&
+				   Name == other.Name &&
+				   Path == other.Path &&
+				   Filename == other.Filename &&
+				   EqualityComparer<byte[]>.Default.Equals(_trackDataBlob, other._trackDataBlob) &&
+				   EqualityComparer<byte[]>.Default.Equals(_cueBlob, other._cueBlob) &&
+				   EqualityComparer<byte[]>.Default.Equals(_loopBlob, other._loopBlob) &&
+				   Artist == other.Artist &&
+				   Album == other.Album &&
+				   Genre == other.Genre &&
+				   Comment == other.Comment &&
+				   (Math.Abs(SampleRate - other.SampleRate) < 1.0) &&
+				   LengthInSamples == other.LengthInSamples &&
+				   (Math.Abs(LengthInSeconds - other.LengthInSeconds) < 1.0) &&
+				   EqualityComparer<List<Cue>>.Default.Equals(Cues, other.Cues) &&
+				   EqualityComparer<List<Loop>>.Default.Equals(Loops, other.Loops);
+		}
+
+		public override int GetHashCode()
+		{
+			HashCode hash = new HashCode();
+			hash.Add(Id);
+			hash.Add(Name);
+			hash.Add(Path);
+			hash.Add(Filename);
+			hash.Add(_trackDataBlob);
+			hash.Add(_cueBlob);
+			hash.Add(_loopBlob);
+			hash.Add(Artist);
+			hash.Add(Album);
+			hash.Add(Genre);
+			hash.Add(Comment);
+			hash.Add(SampleRate);
+			hash.Add(LengthInSamples);
+			hash.Add(LengthInSeconds);
+			hash.Add(Cues);
+			hash.Add(Loops);
+			return hash.ToHashCode();
+		}
+
+		public static bool operator ==(Track left, Track right)
+		{
+			return EqualityComparer<Track>.Default.Equals(left, right);
+		}
+
+		public static bool operator !=(Track left, Track right)
+		{
+			return !(left == right);
+		}
 	}
 }
