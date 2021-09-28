@@ -64,7 +64,7 @@ or IMPORT COMPLETELY a database from an external drive. Let's go through both op
 1. EXPORT LOCAL db to EXTERNAL DRIVE (will copy music files too)
 2. IMPORT database FROM EXTERNAL DRIVE (doesn't copy music)
 
-## Option 1 Guide For Import/Export entire Database:
+## Option 1.1 Guide For exporting entire Database:
 This will completely wipe your external hard drive's Music folder and the m.db and p.db files located there. This option
 is meant to do a total mirror of what you have on your PC. Upon choosing this, it attemps to auto find where your database
 files are stored and will show you this path if it does. If it doesn't, you are prompted to enter a path. Regardless,
@@ -141,7 +141,7 @@ back to the main menu.
 Finally, we remap all the paths (remember that step, long ago before the copying took place?) in the DESTINATION
 databases so that your turntables (and the Engine Prime software) will be able to correctly find where the tracks are located.
 
-## Option 2 Guide For Import/Export entire Database:
+## Option 1.2 Guide For import entire Database:
 	
 This will copy just the databases from a source location to your PC's Engine Library folder. **It doesn't copy any music**. It 
 will prompt you to fix file paths and it will also verify that these files exist so you are prevented from entering invalid values
@@ -184,24 +184,154 @@ be so mind numbingly boring that I'm not that interested. If this bothers you, f
 I know enough database knowledge to get things done, just not in the most optimal way.
 
 
+# 2. Import/Export playlists THIS IS ONLY COMPATIBLE WITH DATABASES THAT HAVE BEEN FULLY IMPORTED OR EXPORTED VIA THE ABOVE!!!!!
+**I cannot stress this enough: This will only work if you have your databases on the source and destination locations in sync
+by having gone through the previous Import/Export entire database section.** The reason is because of how Engine Prime handles
+mapping unique track IDs within the database. It can sometimes diverge between the multiple databases for some reason (usually 
+when you add tracks from a different root folder, or if you delete then add files) and this makes it nearly impossible for me
+to otherwise tell what tracks are the same but just have different paths. **SO ONCE AGAIN, THIS ONLY WORKS IF YOU DID
+AN IMPORT/EXPORT OF YOUR ENTIRE DATABASE FROM THE FIRST OPTION**.
+
+Use this to **completely overwrite playlists** on either your computer or an external drive. I suppose you could just drag
+I will now cover the 2 options:
+
+1. EXPORT LOCAL playlists to EXTERNAL DRIVE
+2. IMPORT playlists FROM EXTERNAL DRIVE
+
+## Option 2.1 Guide For Exporting Playlists To External Drive
+**I cannot stress this enough: This will only work if you have your databases on the source and destination locations in sync
+by having gone through the previous Import/Export entire database section.**
+
+The program will attempt to find where you database files are on your PC. If this fails, OR if you decide for whatever reason
+I am not aware of due to my use case that you want to specify a different path, you have the option to do so. The program then
+tries to find the database files at the path to specify: if it can't find them, you stay in a loop entering the path. This way
+you can't mistype the wrong location. 
+
+Next you're prompted for the DESTINATION drive letter. This is **WHERE YOU ARE COPYING TO**. If your external drive was say
+F:, you'd enter any of the following: f, f:, f:\\
+The app will then verify that this is valid and that AT THE ROOT LEVEL it can find Engine Library\m.db and p.db.
+I suppose this could be a mapped network drive, or another drive altogether. But I haven't tested that behavior and won't. It
+was designed to export to USB or other external drive.
+
+You're then reminded about the stuff I wrote in bold and you get a prompt asking if you want to return to the main menu in case
+you don't want to proceed. If you continue, you'll see some red text that says:
+
+"Press enter to wipe all playlists from destination database."
+
+Press Enter and boom, all your playlists get transferred over from the external drive to your PC, should be very fast. Then you return to the main menu.
+**No, this does not copy music files, it just simply mirrors your playlists** The playlist structure actually (thank god) references track ID numbers rather
+than actual file paths so that's why it's so fast **and that's why the track ID matching is so important and why you have to do a full import/export
+via this tool first to make sure that the IDs are correctly synced.**
+
+## Option 2.2 Guide For Importing Playlists From External Drive
+**I cannot stress this enough: This will only work if you have your databases on the source and destination locations in sync
+by having gone through the previous Import/Export entire database section.**
+
+The program will attempt to find where you database files are on your PC. If this fails, OR if you decide for whatever reason
+I am not aware of due to my use case that you want to specify a different path, you have the option to do so. The program then
+tries to find the database files at the path to specify: if it can't find them, you stay in a loop entering the path. This way
+you can't mistype the wrong location. 
+
+Next you're prompted for the source drive letter. This is **WHERE YOU ARE COPYING FROM**. If your external drive was say
+F:, you'd enter any of the following: f, f:, f:\\
+The app will then verify that this is valid and that AT THE ROOT LEVEL it can find Engine Library\m.db and p.db.
+**This was exclusively designed to import from external drives, so it most likely won't help you to import from any other source like
+say a network share or different directory on your computer without some finagling on your part.**
+
+You're then reminded about the stuff I wrote in bold and you get a prompt asking if you want to return to the main menu in case
+you don't want to proceed. If you continue, you'll see some red text that says:
+
+"Press enter to wipe all playlists from destination database."
+
+Press Enter and boom, all your playlists get transferred over from the external drive to your PC, should be very fast. Then you return to the main menu.
+**No, this does not copy music files, it just simply mirrors your playlists** The playlist structure actually (thank god) references track ID numbers rather
+than actual file paths so that's why it's so fast **and that's why the track ID matching is so important and why you have to do a full import/export
+via this tool first to make sure that the IDs are correctly synced.**
+
+# 3 Import/Export Crates
+**THIS FUNCTIONS EXACTLY THE SAME AS Import/Export Playlists WITH THE EXACT SAME REQUIREMENTS AND CAVEATS. PLEASE READ SECTION NUMBER 2 
+FOR A DETAILED EXPLANATION OF THIS FEATURE.** The only thing this does differently is it just imports or exports CRATES instead of playlists
+so there's no reason to go into a deep dive on the usage. It is literally the same thing as the playlist stuff, just with crates.
+
+# 4 Import/Export Metadata (Cues/Loops/Waveforms/Etc)
+**I cannot stress this enough: This will only work if you have your databases on the source and destination locations in sync
+by having gone through the previous Import/Export entire database section.**
+
+This lets you selectively copy over cue and loop points (along w/ all their other data like names and colors you picked), as well as
+other less common metadata like the track waveforms (which come from EP's analysis step when you import a track) and beat related data.
+The following 2 options are presented to you:
+
+1. EXPORT LOCAL metadata to EXTERNAL DRIVE
+2. IMPORT metadata FROM EXTERNAL DRIVE
+
+**The functionality of importing and exporting is essentially the same, with all the same caveats and requirements. Thus I will
+only cover the importing process.**
+
+Once you choose either of the above options, the following 4 import/export options are displayed to you:
+
+	Which metadata do you wish to import (or export if you chose option 1)?
+	1. Just cue points
+	2. Just loop info
+	3. Both cues AND loops
+	4. Everything (includes beat data, waveform analysis, cues, loops, etc)
+	5. Back
+	
+	
+
+## 4.2.1 Importing Cue Points
+The program will attempt to find where you database files are on your PC. If this fails, OR if you decide for whatever reason
+I am not aware of due to my use case that you want to specify a different path, you have the option to do so. The program then
+tries to find the database files at the path to specify: if it can't find them, you stay in a loop entering the path. This way
+you can't mistype the wrong location. If you don't have these files, just simply run EP once then quit: it will make empty ones.
+
+Next you're prompted for the source drive letter (or destination if exporting). This is **WHERE YOU ARE COPYING FROM/TO**. If your external drive was say
+F:, you'd enter any of the following: f, f:, f:\\
+The app will then verify that this is valid and that AT THE ROOT LEVEL it can find Engine Library\m.db and p.db.
+**This was exclusively designed to import from external drives, so it most likely won't help you to import from any other source like
+say a network share or different directory on your computer without some finagling on your part.**
+
+After this you'll see in magenta text something that looks like this:
+
+	Updating 616 tracks. This may take anywhere from a few seconds to minutes depending on size.
+	
+I have a small number of tracks so for me this takes 3 seconds. If you have a shit load, it may take longer. What happens during this step
+is we read all the performance data out of the performance database **for each track** and copy over all the cue point info **for each track**.
+
+Once that's done you go back to the main menu. No other steps.
+
+## 4.2.2 Importing Loop Points
+This functions **exactly like 4.2.1: Importing Cue Points** so please read that section. The only difference is this **only** copies cue
+points, not loop points.
+
+## 4.2.3 Importing Both Cues AND Loops
+This is legit the exact same thing as steps 4.2.1 and 4.2.2 combined together. Just read section 4.2.1, it's the same thing it just copies
+both types of data.
+
+## 4.2.4 Importing Everything 
+This straight up copies **every piece of performance data for each track**. What does that mean, you ask? Looking in p.db, the performance database,
+that means that besides copying over your loop and cue point info, it will also copy over the precomputed waveform data (there's 2 of these, one
+looks like it's a high res version of the wave form, another looks like an overview/preview/simpler version of the wave form), and
+any beat data (beat grid and beat markers, there's 2: one analyzed by EP/turntables and an _adjusted_ one if you modified it by hand).
+
+**This process functions exactly the same as all the other options (obviously except what it copies), so please read 4.2.1 for details**. 
 
 # FAQ
-		1. How come some characters show up strangely? 
-			I can't seem to figure out how to get the console to properly display Unicode file/directory names. I've set it
-			to use Unicode but that didn't help. You can try right-clicking the title bar and changing the font to see if
-			there's maybe a font that works better (you could also make the font smaller or bigger too). This font change
-			persists through all sessions of the app. For exmaple, I for some reason have directories that use
-			what's called an "em-dash". On Windows, if you type "--" it auto changes it to a fancy looking special dash 
-			character. In my case, this will show up in the console as "?-", notice the ?. You may see a box or something
-			similar. DON'T FRET: The code correctly stores these paths (I've verified), this is just simply a visual
-			display issue and does NOT affect in any way the safety of copying your music files.
+	1. How come some characters show up strangely? 
+		I can't seem to figure out how to get the console to properly display Unicode file/directory names. I've set it
+		to use Unicode but that didn't help. You can try right-clicking the title bar and changing the font to see if
+		there's maybe a font that works better (you could also make the font smaller or bigger too). This font change
+		persists through all sessions of the app. For exmaple, I for some reason have directories that use
+		what's called an "em-dash". On Windows, if you type "--" it auto changes it to a fancy looking special dash 
+		character. In my case, this will show up in the console as "?-", notice the ?. You may see a box or something
+		similar. DON'T FRET: The code correctly stores these paths (I've verified), this is just simply a visual
+		display issue and does NOT affect in any way the safety of copying your music files.
 			
-		2. Can you add feature X?
-			Most likely: No. If it's not something that I'd care to use, I probably won't add it. This was
-			a quick and dirty side project for me that I decided to share with everyone. I have other things
-			I need to be doing during my day and as this is free and I'm not being paid for it, I'd rather
-			do the other things that pay me. Or play video games. Or just do something else. If you program,
-			you're welcome to implement the feature and submit a pull request and I'll review it and add it.
+	2. Can you add feature X?
+		Most likely: No. If it's not something that I'd care to use, I probably won't add it. This was
+		a quick and dirty side project for me that I decided to share with everyone. I have other things
+		I need to be doing during my day and as this is free and I'm not being paid for it, I'd rather
+		do the other things that pay me. Or play video games. Or just do something else. If you program,
+		you're welcome to implement the feature and submit a pull request and I'll review it and add it.
 
 # Code notes
 This code is written quickly to maximize usefulness for me and minimize time spent working on it. It's
