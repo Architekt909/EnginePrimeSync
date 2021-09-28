@@ -414,4 +414,4 @@ THIS COULD BE DONE BETTER, it's written for legibility and for quick implementat
 
 # Contributing
 You're welcome to contribute additions/improvements. I'm not interested in performance updates, unless
-you can prove to me with empirical data via actual performance analysis. that a perceptible difference exists in the changes.
+you can prove to me with empirical data via actual performance analysis that a perceptible difference exists in the changes.
