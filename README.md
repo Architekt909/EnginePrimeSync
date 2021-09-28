@@ -318,12 +318,11 @@ any beat data (beat grid and beat markers, there's 2: one analyzed by EP/turntab
 # FAQ
 	1. How come some characters show up strangely? 
 	
-	I can't seem to figure out how to get the console to properly display Unicode file/directory names. I've set it
-	to use Unicode but that didn't help. You can try right-clicking the title bar and changing the font to see if
-	there's maybe a font that works better (you could also make the font smaller or bigger too). This font change
-	persists through all sessions of the app. For exmaple, I for some reason have directories that use
+	I can't seem to figure out how to get the console to properly display Unicode file/directory names. I've
+	set it to use Unicode but that didn't help. You can try right-clicking the title bar and changing the font 
+	to see if maybe another font that works better. For example, I for some reason have directories that use
 	what's called an "em-dash". On Windows, if you type "--" it auto changes it to a fancy looking special dash 
-	character. In my case, this will show up in the console as "?-", notice the ?. You may see a box or something
+	character. In my case, this will show up in the console as "?-", notice the ?. You may see a box or 
 	similar. DON'T FRET: The code correctly stores these paths (I've verified), this is just simply a visual
 	display issue and does NOT affect in any way the safety of copying your music files.
 			
@@ -334,6 +333,45 @@ any beat data (beat grid and beat markers, there's 2: one analyzed by EP/turntab
 	I need to be doing during my day and as this is free and I'm not being paid for it, I'd rather
 	do the other things that pay me. Or play video games. Or just do something else. If you program,
 	you're welcome to implement the feature and submit a pull request and I'll review it and add it.
+	
+	3. I found a bug!
+	
+	DO NOT REPORT BUGS ON THE DENON FORUM AS I HAVE NOTIFICATIONS DISABLED SINCE THE INTERNET IS A CESSPOOL
+	OF WHINING DBAGS WHO COMPLAIN EVEN WITH FREE STUFF. If you found a bug, please file an issue here on
+	GitHub. Look at the very top of this page: you'll see "Issues" to the right of "Code" and next to 
+	"Pull requests". These I will be notified of and can comment on and keep track of. If you post bugs 
+	to the forum, I'll never be able to have an organized way of dealing with issues.
+	
+	4. Can you add a feature to remap file paths?
+	
+	No. Another user has already provided a tool to do this. Also, as I said, I wrote this tool for myself
+	and my needs. The one time I had to manually change/fix my paths I just opened up m.db and with a very
+	small/simple SQLite piece of syntax updated and fixed everything. If this is beyond your scope of 
+	comfortability/knowledge, please look into that tool I mentioned (can't recall who posted it or where
+	it's located, try searching the forums) or try and see if you can figure out the query syntax. You can
+	use a free database editing program like https://sqlitebrowser.org/ which works on Windows and Mac.
+	Open up your m.db and browse the "Track" database inside it. You'll see a column named "Path" that has
+	the relative location of all your tracks. This is what you'd want to modify.
+	
+	5. It didn't work when I did anything from options 2 through 4, or worse it caused errors!
+	
+	As stated in bold letters at the start of each section, these options ONLY work if you imported or 
+	exported the database you're trying to use as the source using my tool via option 1, the wholesale import/
+	export of the database which includes the music and the path remapping. If you don't do this, it COULD
+	work, BUT the problem is that EP can sometimes have unique track IDs that are mismatched and that makes
+	it impossible for me to guarantee any reliability or validity of the data copied. That's why it's so
+	important that you do a full export/import using my tool at least once.
+	
+	6. What about a sync feature?
+	
+	I thought about it. Then I realized it would take more time than I have to work on. The main obstacle is
+	that I (and apparently all sources I found on the internet) don't quite know how to interpret what is called
+	the "changelog" table in each of the databases. I've tried some tests, and sometimes I get it to add a
+	changelog entry for a track, but some actions don't cause an entry. So I don't know a good non-brute force
+	approach to doing a standard sync operation. Honestly, I think the best workflow is to commit to either
+	working solely in EP or solely on the turntables and then importing/exporting as needed. I think trying
+	to do multiple things in multiple places is just going to complicate your life.
+		
 
 # Code notes
 This code is written quickly to maximize usefulness for me and minimize time spent working on it. It's
