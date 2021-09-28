@@ -317,21 +317,23 @@ any beat data (beat grid and beat markers, there's 2: one analyzed by EP/turntab
 
 # FAQ
 	1. How come some characters show up strangely? 
-		I can't seem to figure out how to get the console to properly display Unicode file/directory names. I've set it
-		to use Unicode but that didn't help. You can try right-clicking the title bar and changing the font to see if
-		there's maybe a font that works better (you could also make the font smaller or bigger too). This font change
-		persists through all sessions of the app. For exmaple, I for some reason have directories that use
-		what's called an "em-dash". On Windows, if you type "--" it auto changes it to a fancy looking special dash 
-		character. In my case, this will show up in the console as "?-", notice the ?. You may see a box or something
-		similar. DON'T FRET: The code correctly stores these paths (I've verified), this is just simply a visual
-		display issue and does NOT affect in any way the safety of copying your music files.
+	
+	I can't seem to figure out how to get the console to properly display Unicode file/directory names. I've set it
+	to use Unicode but that didn't help. You can try right-clicking the title bar and changing the font to see if
+	there's maybe a font that works better (you could also make the font smaller or bigger too). This font change
+	persists through all sessions of the app. For exmaple, I for some reason have directories that use
+	what's called an "em-dash". On Windows, if you type "--" it auto changes it to a fancy looking special dash 
+	character. In my case, this will show up in the console as "?-", notice the ?. You may see a box or something
+	similar. DON'T FRET: The code correctly stores these paths (I've verified), this is just simply a visual
+	display issue and does NOT affect in any way the safety of copying your music files.
 			
 	2. Can you add feature X?
-		Most likely: No. If it's not something that I'd care to use, I probably won't add it. This was
-		a quick and dirty side project for me that I decided to share with everyone. I have other things
-		I need to be doing during my day and as this is free and I'm not being paid for it, I'd rather
-		do the other things that pay me. Or play video games. Or just do something else. If you program,
-		you're welcome to implement the feature and submit a pull request and I'll review it and add it.
+	
+	Most likely: No. If it's not something that I'd care to use, I probably won't add it. This was
+	a quick and dirty side project for me that I decided to share with everyone. I have other things
+	I need to be doing during my day and as this is free and I'm not being paid for it, I'd rather
+	do the other things that pay me. Or play video games. Or just do something else. If you program,
+	you're welcome to implement the feature and submit a pull request and I'll review it and add it.
 
 # Code notes
 This code is written quickly to maximize usefulness for me and minimize time spent working on it. It's
