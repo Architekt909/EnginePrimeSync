@@ -206,6 +206,8 @@ to otherwise tell what tracks are the same but just have different paths. **SO O
 AN IMPORT/EXPORT OF YOUR ENTIRE DATABASE FROM THE FIRST OPTION**.
 
 Use this to **completely overwrite playlists** on either your computer or an external drive. I suppose you could just drag
+and drop them within the EP app, but I've sometimes had problems with this myself. Plus this is faster.
+
 I will now cover the 2 options:
 
 1. EXPORT LOCAL playlists to EXTERNAL DRIVE
@@ -237,7 +239,7 @@ you don't want to proceed. If you continue, you'll see some red text that says:
 "Press enter to wipe all playlists from destination database."
 
 Press Enter and boom, all your playlists get transferred over from the external drive to your PC, should be very fast. Then you return to the main menu.
-**No, this does not copy music files, it just simply mirrors your playlists** The playlist structure actually (thank god) references track ID numbers rather
+**No, this does not copy music files, it just simply mirrors your playlists**. The playlist structure actually (thank god) references track ID numbers rather
 than actual file paths so that's why it's so fast **and that's why the track ID matching is so important and why you have to do a full import/export
 via this tool first to make sure that the IDs are correctly synced.**
 
@@ -318,8 +320,8 @@ is we read all the performance data out of the performance database **for each t
 Once that's done you go back to the main menu. No other steps.
 
 ## 4.2.2 Importing Loop Points
-This functions **exactly like 4.2.1: Importing Cue Points** so please read that section. The only difference is this **only** copies cue
-points, not loop points.
+This functions **exactly like 4.2.1: Importing Cue Points** so please read that section. The only difference is this **only** copies loop
+points, not cue points.
 
 ## 4.2.3 Importing Both Cues AND Loops
 This is legit the exact same thing as steps 4.2.1 and 4.2.2 combined together. Just read section 4.2.1, it's the same thing it just copies
