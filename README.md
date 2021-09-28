@@ -369,7 +369,7 @@ any beat data (beat grid and beat markers, there's 2: one analyzed by EP/turntab
 	small/simple SQLite piece of syntax updated and fixed everything. If this is beyond your scope of 
 	comfortability/knowledge, please look into that tool I mentioned (can't recall who posted it or where
 	it's located, try searching the forums) or try and see if you can figure out the query syntax. You can
-	use a free database editing program like https://sqlitebrowser.org/ which works on Windows and Mac.
+	use a free database editing program like [SQLite Browser](https://sqlitebrowser.org/) which works on Windows and Mac.
 	Open up your m.db and browse the "Track" database inside it. You'll see a column named "Path" that has
 	the relative location of all your tracks. This is what you'd want to modify.
 	
