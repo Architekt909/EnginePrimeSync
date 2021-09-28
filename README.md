@@ -340,9 +340,9 @@ any beat data (beat grid and beat markers, there's 2: one analyzed by EP/turntab
 	
 	I can't seem to figure out how to get the console to properly display Unicode file/directory names. I've
 	set it to use Unicode but that didn't help. You can try right-clicking the title bar and changing the font 
-	to see if maybe another font that works better. For example, I for some reason have directories that use
+	to see if maybe another font works better. For example, I for some reason have directories that use
 	what's called an "em-dash". On Windows, if you type "--" it auto changes it to a fancy looking special dash 
-	character. In my case, this will show up in the console as "?-", notice the ?. You may see a box or 
+	character. In my case, this will show up in the console as "?-", notice the ?. You may see a box like □ or 
 	similar. DON'T FRET: The code correctly stores these paths (I've verified), this is just simply a visual
 	display issue and does NOT affect in any way the safety of copying your music files.
 			
