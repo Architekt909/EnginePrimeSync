@@ -7,31 +7,34 @@ everything to match what you did on the devices), ability to remap paths where f
 you move your db location or the files, etc.
 
 # REQUIREMENTS
-If you're exporting to an external drive, THE DRIVE MUST BE FORMATTED AS exFat! This is because exFat
+If you're exporting to an external drive, **THE DRIVE MUST BE FORMATTED AS exFat!** This is because exFat
 supports Unicode characters in file and directory names. FAT32 does not. Also there's just no reason
 to use FAT32 anyway, every operating system can read exFat.
 
 # COMPATIBILITY
 This is designed to only work with edits done via the native Engine Prime app and the SC5000/6000
-turntables themselves (i.e. working on the device itself). I do not use nor care about Traktor,
-iTunes, Serrato, etc. Thus, this tool will only operate on the main database files. These files are:
+turntables themselves (i.e. working on the device itself). **I do not use nor care about Traktor,
+iTunes, Serrato, etc. Thus, this tool will only operate on the main database files.** These files are:
 
 m.db - aka "Main DB", holds most of your track and path information
 p.db - aka "Performance DB" holds things like cues/loops, waveform analysis, etc.
 
-DON'T USE THIS IF YOU USE OTHER SOFTWARE TO MANAGE YOUR LIBRARIES.
+**DON'T USE THIS IF YOU USE OTHER SOFTWARE TO MANAGE YOUR LIBRARIES.**
 
 # WARNING READ THIS IF YOU READ NOTHING ELSE
 This tool is not guaranteed to be 100% bug free. I think it is, because I've tested it on my own libraries.
 But you may have a setup that I didn't expect or plan for (I wrote this on Windows, haven't tested on other platforms
 even though the code is platform independent). It also overwrites existing data, that being databases, and in 
 the case of a wholesale export to an external drive, the music that was previously on the external drive.
+Also, as stated above, **this only works for databases made/edited with EP or the SC5/6000 turntables or 
+whatever else runs Engine Prime on it. It will NOT work with Serato, iTunes, Traktor, Notepad, World of Warcraft,
+or anything else**.
 
 # TL;DR MAKE A BACKUP OF YOUR LIBRARY FILES
 Specifically what you want to back up are "m.db" and "p.db" located wherever your "Engine Library"
 folder is. This will generally be in your music directory (at least on Windows), and will be in the
-root directory on external drives. FOR EXTERNAL DRIVES YOU MAY ALSO WANT TO BACK UP THE ENTIRE
-MUSIC SUBDIRECTORY. This folder contains your remapped music files.
+root directory on external drives. **FOR EXTERNAL DRIVES YOU MAY ALSO WANT TO BACK UP THE ENTIRE
+MUSIC SUBDIRECTORY. This folder contains your remapped music files.**
 
 # Exporting DB Notes
 I create the Music directory structure differently on the external drive than the Engine Prime software
@@ -39,23 +42,23 @@ does. Let's say on your PC you have your music files stored at:
 
 D:\MyMusic\Artist - Album Name\Track1.flac etc.
 
-Engine Prime will create the directory in the following way:
+Engine Prime will create the directory in the following way (assuming external drive is labeled F:):
 
-Music\Album Artist (may differ from artist)\Album Name\Track1.flac etc
+F:\Music\Album Artist (may differ from artist)\Album Name\Track1.flac etc
 
-FURTHERMORE, because it writes assuming the lowest common denominator (FAT32), it strips all Unicode and
-special characters. Periods become underscores, umlauts become something random, etc.
+FURTHERMORE, because it writes assuming the lowest common denominator (FAT32), __it strips all Unicode and
+special characters. Periods become underscores, umlauts become something random, etc.__
 
-This app straight up mirrors your original directory structure to the external drive. Unicode file names and all.
+**This app straight up mirrors your original directory structure to the external drive. Unicode file names and all.**
 So with the above example, it'd look like this with my app:
 
-Music\Artist - Album Name\Track1.flac etc
+F:\Music\Artist - Album Name\Track1.flac etc
 Exactly how you had it stored on your drive.
 
 # USAGE GUIDE
 I've tried to make the app display the info intelligently when you use it, and I've tried to make it
 fault tolerant, i.e. if you enter the wrong values it doesn't let you proceed and just asks for input
-again. BACK UP YOUR SHIT BEFORE YOU PROCEED. Anyway, let's go through each option:
+again. **BACK UP YOUR SHIT BEFORE YOU PROCEED**. Anyway, let's go through each option:
 
 # 1. Import/Export entire Database
 Use this to WHOLESALE copy an ENTIRE database either from your computer to an external drive,
@@ -65,12 +68,12 @@ or IMPORT COMPLETELY a database from an external drive. Let's go through both op
 2. IMPORT database FROM EXTERNAL DRIVE (doesn't copy music)
 
 ## Option 1.1 Guide For exporting entire Database:
-This will completely wipe your external hard drive's Music folder and the m.db and p.db files located there. This option
-is meant to do a total mirror of what you have on your PC. Upon choosing this, it attemps to auto find where your database
+This will completely wipe your external hard drive's Music folder and the m.db and p.db files located there. **This option
+is meant to do a total mirror of what you have on your PC.** Upon choosing this, it attemps to auto find where your database
 files are stored and will show you this path if it does. If it doesn't, you are prompted to enter a path. Regardless,
 you have the option to change the path from the default. **Enter The FULL path to the folder containing m.db/p.db. Trailing
 slash doesn't matter in this case**. For example, if your m.db file is located at D:\DropBox\Music\Engine Library\m.db you'd
-enter: D:\DropBox\Music\Engine Library\
+enter: D:\DropBox\Music\Engine Library
 
 The program will check to see if those files exist. If they don't, you'll be placed in a loop where you keep getting asked
 for the proper folder until it's able to find the database files it needs. You can't screw this part up.
@@ -94,7 +97,7 @@ on the external drive. **Paths are also stored relative to the location of the d
 music stored in D:\DropBox\Music\Archived Vinyl. My Engine Prime database is located at D:\DropBox\Music\Engine Library.
 My tracks, as stored in my source database, appear with this path:
 
-../Archived Vinyl/<track directory and filename>
+../Archived Vinyl/\<track directory and filename\>
 
 On the destination drive however, all music data has to be placed in the Engine Library\Music folder. So we have to remap
 the prefix or root directory that contains the tracks from the source drive to the destination drive. _During this file
@@ -371,6 +374,17 @@ any beat data (beat grid and beat markers, there's 2: one analyzed by EP/turntab
 	approach to doing a standard sync operation. Honestly, I think the best workflow is to commit to either
 	working solely in EP or solely on the turntables and then importing/exporting as needed. I think trying
 	to do multiple things in multiple places is just going to complicate your life.
+	
+	7. Can you release a Mac or Linux build?
+	
+	Linux, definitely not. I don't have access to a Linux box or have the time to set up a development 
+	environment on one. I also hate Linux and will never have a use case for this app on Linux. I DO
+	have a Mac, but I'm not too familiar with Macs or how Engine Prime works on it, how special folders
+	and paths work there, etc. HOWEVER, the code IS written in .Net 5.0 standard which means, that in 
+	theory, it's platform independent. Some enterprising individual could just simply take my code 
+	and try to recompile a Mac binary. I'd be happy to add it to the release list if that's the case.
+	If you are said enterprising individual, please make sure you thoroughly test EVERY feature of this
+	program to ensure it works.
 		
 
 # Code notes
