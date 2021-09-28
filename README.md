@@ -99,13 +99,18 @@ My tracks, as stored in my source database, appear with this path:
 
 ../Archived Vinyl/\<track directory and filename\>
 
+If you aren't familiar with relative paths, please Google it. the ".." means "go up a directory". So in the above example,
+it means that the tracks are located "up a directory" from D:\DropBox\Music\Engine Library, and then inside the 
+"Archived Vinyl" subdirectory. The full path to this "Archived Vinyl" directory, in my case, is actually:
+D:\DropBox\Music\Archived Vinyl\. Anyway that's it for my quick explanation of relative paths.
+
 On the destination drive however, all music data has to be placed in the Engine Library\Music folder. So we have to remap
 the prefix or root directory that contains the tracks from the source drive to the destination drive. _During this file
 copy stage, the first time we encounter a track that we haven't found a matching prefix for that we need to remap,
 the app will prompt you with the following:_
 
-Please enter the prefix you wish to replace from the string below **(DON'T include trailing slash)**:
-../Archived Vinyl/SomeArtist - SomeAlbum/SomeTrack.mp3
+	Please enter the prefix you wish to replace from the string below **(DON'T include trailing slash)**:
+	../Archived Vinyl/SomeArtist - SomeAlbum/SomeTrack.mp3
 
 What we need to do here is choose the text to **STRIP OUT** from that path. That way the app can create the new
 and correct path on the external drive. Enter the top level directory that contains all your music.
@@ -146,9 +151,10 @@ databases so that your turntables (and the Engine Prime software) will be able t
 
 ## Option 1.2 Guide For import entire Database:
 	
-This will copy just the databases from a source location to your PC's Engine Library folder. **It doesn't copy any music**. It 
+This will copy **just the databases from a source location to your PC's Engine Library folder. It doesn't copy any music**. It 
 will prompt you to fix file paths and it will also verify that these files exist so you are prevented from entering invalid values
-and screwing up your db. In theory. I'd still make backups.
+and screwing up your db. In theory. I'd still make backups. This is useful to totally mirror what's on your external drive to
+your PC's Engine Prime library.
 
 VERY IMPORTANT: **This expects that there already exists the files "m.db" and "p.db" in your Engine Library folder.
 If you are missing them, simply run the Engine Prime software once and exit: it will create placeholder files for you.**
@@ -167,10 +173,14 @@ Next, the app iterates over every single track in the database. It first asks yo
 use for the destination paths for the local files. As the app says, this should be relative to where your PC's m.db
 file is located. 
 
-For example, if we're copying to D:\Music\Engine Library\ (m.db is in here) and our music is located at
-D:\Music\mp3s, you'd enter: ../mp3s
-YOU MUST USE / NOT \ AS THE ENGINE PRIME SOFTWARE EXPECTS PATHS IN THIS FORMAT. If you don't understand how relative paths
-work or how to figure them out, Google it. 
+	For example, if we're copying to D:\Music\Engine Library\ (m.db is in here) and our music is located at
+	D:\Music\mp3s 
+	you'd enter: 
+	../mp3s
+	
+	**********YOU MUST USE / NOT \ AS THE ENGINE PRIME SOFTWARE EXPECTS PATHS IN THIS FORMAT.********** 
+	
+	If you don't understand how relative paths work or how to figure them out, Google it. 
 
 You will then be shown what the remap will look like and asked to accept. If you say no, you go back into the loop to try again.
 
@@ -204,6 +214,11 @@ I will now cover the 2 options:
 ## Option 2.1 Guide For Exporting Playlists To External Drive
 **I cannot stress this enough: This will only work if you have your databases on the source and destination locations in sync
 by having gone through the previous Import/Export entire database section.**
+
+	PLEASE RE-READ WHAT I JUST WROTE AS IT'S OF PARAMOUNT IMPORTANCE:
+	
+	This will only work if you have your databases on the source and destination locations in sync
+	by having gone through the previous Import/Export entire database section
 
 The program will attempt to find where you database files are on your PC. If this fails, OR if you decide for whatever reason
 I am not aware of due to my use case that you want to specify a different path, you have the option to do so. The program then
