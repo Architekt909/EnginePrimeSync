@@ -54,7 +54,7 @@ namespace EnginePrimeSync.Exporters
 			{
 				Console.WriteLine($"Enter full path to the LOCAL PC FOLDER containing {MainDb.DB_NAME} and {PerformanceDb.DB_NAME}:");
 				musicPath = Console.ReadLine();
-				if (musicPath == null)
+				if (string.IsNullOrEmpty(musicPath?.Trim()))
 					continue;
 
 				if (musicPath[^1] != '\\')
