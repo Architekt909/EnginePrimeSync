@@ -1,3 +1,5 @@
+# THIS WORKS PRE-2.0 ENGINE PRIME UPDATE: I HAVE NOT TESTED THIS WITH ENGINE PRIME 2.0 YET SO PLEASE DO NOT USE THIS TOOL IF YOU JUST UPGRADED THIS MORNING (10/5/21), ONLY USE THIS ON ENGINE PRIME VERSIONS LESS THAN 2.0
+
 # EnginePrimeSync
 This is a command line tool with various utilities to help you manage your Denon Engine Prime database.
 I wrote this because I was frustrated with various shortcomings of the GUI app (as of this date, 8/19/21)
